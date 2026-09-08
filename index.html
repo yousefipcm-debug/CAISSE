@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Caisse Espèces — IPCM BOUTEMA</title>
+
+<!-- iOS Add-to-Home-Screen / standalone app support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Caisse IPCM">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1E3B72">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-180.png">
+
+<style>
+  :root{
+    --navy:#1E3B72;
+    --navy-2:#2C4E92;
+    --navy-deep:#142348;
+    --navy-text:#16294F;
+    --gold:#F6C445;
+    --gold-dark:#E0A91F;
+    --pink:#EE4F98;
+    --pink-bg:#FDE7F1;
+    --blue2:#3D7DF6;
+    --blue2-bg:#E8F0FE;
+    --purple:#8A6CF0;
+    --bg:#F5F6FA;
+    --surface:#FFFFFF;
+    --field:#F5F7FB;
+    --line:#E7E9F0;
+    --muted:#8A93A6;
+    --in:#1FAE7A;
+    --in-bg:#E4F7EE;
+    --out:#E5484D;
+    --out-bg:#FCEAEA;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-num: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--navy-text); font-family:var(--font-ui); height:100%;}
+  body{display:flex; flex-direction:column; min-height:100vh;}
+  button{font-family:inherit; cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+
+  /* ---------- Sticky header group ---------- */
+  #headerWrap{position:sticky; top:0; z-index:20; background:var(--bg); padding-bottom:14px;}
+
+  #topHeader{display:flex; align-items:center; justify-content:space-between; padding:calc(16px + env(safe-area-inset-top)) 20px 10px;}
+  #topHeader .brand{font-size:13px; font-weight:800; color:var(--navy-text); letter-spacing:.01em;}
+  #topHeader .brand small{display:block; font-weight:500; color:var(--muted); font-size:11.5px; margin-top:2px;}
+  #topHeader .dateBadge{background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:7px 13px; font-size:11.5px; font-weight:700; color:var(--navy); text-transform:capitalize;}
+
+  /* Hero balance card */
+  #topbar{
+    background:linear-gradient(135deg, var(--navy-2), var(--navy-deep) 85%);
+    color:#fff; margin:2px 16px 0; border-radius:26px;
+    padding:20px 22px 30px; position:relative; overflow:hidden;
+    box-shadow:0 16px 30px -12px rgba(20,35,72,.55);
+  }
+  #topbar::after{content:""; position:absolute; right:-40px; top:-50px; width:160px; height:160px; border-radius:50%; background:rgba(255,255,255,.06);}
+  #topbar .label{font-size:12px; color:#B9C6E8; margin-bottom:6px; position:relative;}
+  #topbar .balance{font-family:var(--font-num); font-size:33px; font-weight:700; letter-spacing:-0.5px; font-variant-numeric:tabular-nums; position:relative;}
+  #topbar .balance span.cur{font-size:15px; font-weight:500; color:#B9C6E8; margin-left:6px;}
+  #topbar .subrow{display:flex; gap:20px; margin-top:12px; font-size:12px; color:#B9C6E8; position:relative;}
+  #topbar .subrow b{color:#fff; font-family:var(--font-num); font-variant-numeric:tabular-nums; font-weight:700;}
+
+  /* Quick action icons overlapping hero card */
+  #quickActions{display:flex; justify-content:space-between; padding:0 26px; margin-top:-24px; position:relative; z-index:6;}
+  .qa{display:flex; flex-direction:column; align-items:center; gap:7px; background:none; border:none; padding:0;}
+  .qa .circ{width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:19px; color:#fff; box-shadow:0 10px 18px -8px rgba(20,35,72,.45); border:3px solid var(--bg);}
+  .qa span{font-size:10.5px; font-weight:700; color:var(--navy-text);}
+  .qa.in .circ{background:var(--pink);}
+  .qa.out .circ{background:var(--blue2);}
+  .qa.rep .circ{background:var(--gold); color:var(--navy-deep);}
+  .qa.exp .circ{background:var(--purple);}
+
+  /* ---------- Main scroll area ---------- */
+  #main{flex:1; overflow-y:auto; padding:16px 0 110px;}
+
+  /* Registre list */
+  .day-group{padding:6px 16px 2px;}
+  .day-label{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700; margin-bottom:8px;}
+  .entry{
+    background:var(--surface); border:none; border-radius:18px;
+    padding:13px 15px; margin-bottom:10px; display:flex; align-items:center; gap:12px;
+    box-shadow:0 8px 18px -12px rgba(20,35,72,.35);
+  }
+  .entry .mark{width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:700; flex-shrink:0;}
+  .entry.in .mark{background:var(--in-bg); color:var(--in);}
+  .entry.out .mark{background:var(--out-bg); color:var(--out);}
+  .entry .info{flex:1; min-width:0;}
+  .entry .desc{font-size:14.5px; font-weight:700; color:var(--navy-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .entry .meta{font-size:12px; color:var(--muted); margin-top:2px;}
+  .entry .amt{font-family:var(--font-num); font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; flex-shrink:0;}
+  .entry.in .amt{color:var(--in);}
+  .entry.out .amt{color:var(--out);}
+
+  #empty{padding:60px 30px; text-align:center; color:var(--muted);}
+  #empty .big{font-size:15px; font-weight:700; color:var(--navy-text); margin-bottom:6px;}
+  #empty .small{font-size:13px; line-height:1.5;}
+
+  /* ---------- Bottom nav (floating pill with FAB) ---------- */
+  #navbar{
+    position:fixed; left:16px; right:16px; bottom:calc(14px + env(safe-area-inset-bottom));
+    background:var(--navy-deep); border-radius:30px; display:flex; align-items:center;
+    padding:8px 14px; z-index:30; box-shadow:0 18px 32px -12px rgba(20,35,72,.55);
+  }
+  .navbtn{flex:1; border:none; background:none; padding:8px 0; display:flex; flex-direction:column; align-items:center; gap:3px; color:#8FA0CC; font-size:10.5px; font-weight:600;}
+  .navbtn.active{color:#fff;}
+  .navbtn .ic{font-size:19px; line-height:1;}
+  .navbtn.fab{color:var(--navy-deep); position:relative;}
+  .navbtn.fab .ic{
+    width:54px; height:54px; border-radius:50%; background:var(--gold); color:var(--navy-deep);
+    display:flex; align-items:center; justify-content:center; font-size:25px; font-weight:700;
+    margin-top:-30px; border:4px solid var(--bg); box-shadow:0 12px 22px -8px rgba(0,0,0,.4);
+  }
+  .navbtn.fab div:last-child{opacity:0;}
+
+  /* ---------- Sheets (full screen overlays) ---------- */
+  .sheet{
+    position:fixed; inset:0; background:var(--bg); z-index:50;
+    display:none; flex-direction:column;
+  }
+  .sheet.open{display:flex;}
+  .sheet-head{
+    background:linear-gradient(135deg, var(--navy-2), var(--navy-deep) 85%); color:#fff;
+    padding:calc(16px + env(safe-area-inset-top)) 16px 18px; display:flex; align-items:center; gap:12px;
+    position:sticky; top:0; border-radius:0 0 22px 22px;
+  }
+  .sheet-head h2{font-size:16px; margin:0; font-weight:700; flex:1;}
+  .iconbtn{background:rgba(255,255,255,.14); border:none; color:#fff; width:32px; height:32px; border-radius:10px; font-size:16px; display:flex; align-items:center; justify-content:center;}
+  .sheet-body{flex:1; overflow-y:auto; padding:20px 16px 40px;}
+
+  /* Toggle IN/OUT */
+  .typetoggle{display:flex; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:4px; margin-bottom:18px; box-shadow:0 6px 14px -10px rgba(20,35,72,.3);}
+  .typetoggle button{flex:1; border:none; background:none; padding:11px 0; border-radius:11px; font-size:14px; font-weight:700; color:var(--muted);}
+  .typetoggle button.sel-in{background:var(--pink-bg); color:var(--pink);}
+  .typetoggle button.sel-out{background:var(--blue2-bg); color:var(--blue2);}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:7px; text-transform:uppercase; letter-spacing:.03em;}
+  .field input, .field textarea{
+    width:100%; border:1px solid var(--line); background:var(--field); border-radius:14px;
+    padding:13px 14px; font-size:15px; color:var(--navy-text);
+  }
+  .field input.amount{font-family:var(--font-num); font-size:22px; font-weight:700; font-variant-numeric:tabular-nums;}
+  .field textarea{resize:vertical; min-height:44px;}
+  .hint{font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.4;}
+
+  .primary-btn{
+    width:100%; background:var(--navy); color:#fff; border:none; border-radius:16px;
+    padding:16px; font-size:15px; font-weight:700; margin-top:6px;
+  }
+  .primary-btn.brass{background:var(--gold); color:var(--navy-deep);}
+  .secondary-btn{
+    width:100%; background:var(--surface); color:var(--navy-text); border:1px solid var(--line); border-radius:16px;
+    padding:14px; font-size:14px; font-weight:700; margin-top:10px;
+  }
+  .danger-link{width:100%; background:none; border:none; color:var(--out); font-size:13px; padding:14px; margin-top:4px; font-weight:600;}
+
+  /* Detail sheet rows */
+  .detail-row{display:flex; justify-content:space-between; padding:13px 0; border-bottom:1px solid var(--line); font-size:14px;}
+  .detail-row .k{color:var(--muted);}
+  .detail-row .v{font-weight:700; text-align:right; max-width:60%;}
+  .detail-amt{text-align:center; padding:24px 0 10px;}
+  .detail-amt .n{font-family:var(--font-num); font-size:36px; font-weight:800; font-variant-numeric:tabular-nums;}
+  .detail-amt.in .n{color:var(--in);}
+  .detail-amt.out .n{color:var(--out);}
+  .detail-amt .t{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:5px; font-weight:700;}
+
+  /* Reports */
+  .period-row{display:flex; gap:8px; margin-bottom:18px; overflow-x:auto; padding-bottom:2px;}
+  .period-chip{flex-shrink:0; border:1px solid var(--line); background:var(--surface); border-radius:20px; padding:9px 16px; font-size:13px; font-weight:700; color:var(--muted);}
+  .period-chip.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+  .kpi-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px;}
+  .kpi{background:var(--surface); border:none; border-radius:16px; padding:15px; box-shadow:0 8px 18px -12px rgba(20,35,72,.3);}
+  .kpi .l{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px; font-weight:700;}
+  .kpi .v{font-family:var(--font-num); font-size:19px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--navy-text);}
+  .kpi.in .v{color:var(--in);}
+  .kpi.out .v{color:var(--out);}
+
+  /* ---------- Print ---------- */
+  #printArea{display:none;}
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{display:block; position:absolute; top:0; left:0; width:100%; padding:20px; color:#000; font-family: Georgia, "Times New Roman", serif;}
+    .noprint{display:none !important;}
+  }
+  .doc-head{border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:22px;}
+  .doc-head .rs{font-size:16px; font-weight:700; letter-spacing:.02em;}
+  .doc-head .meta{font-size:11px; margin-top:4px; line-height:1.5;}
+  .doc-title{text-align:center; font-size:20px; font-weight:700; letter-spacing:.08em; margin:22px 0 26px;}
+  .doc-line{font-size:13.5px; line-height:2; margin-bottom:8px;}
+  .doc-blank{border-bottom:1px solid #000; display:inline-block; min-width:160px; padding:0 4px;}
+  .doc-amount-box{border:1px solid #000; padding:14px; margin:20px 0; text-align:center; font-size:15px;}
+  .doc-amount-box .n{font-size:22px; font-weight:700; font-family:'Courier New', monospace;}
+  .sign-row{display:flex; justify-content:space-between; margin-top:60px;}
+  .sign-col{width:45%; text-align:center; font-size:12.5px;}
+  .sign-col .l{border-top:1px solid #000; margin-top:50px; padding-top:6px;}
+  table.rep{width:100%; border-collapse:collapse; font-size:12px; margin-top:8px;}
+  table.rep th{text-align:left; border-bottom:2px solid #000; padding:6px 4px; font-size:10.5px; text-transform:uppercase;}
+  table.rep td{padding:6px 4px; border-bottom:1px solid #ccc;}
+  table.rep td.num, table.rep th.num{text-align:right; font-family:'Courier New', monospace;}
+  .rep-foot td{border-top:2px solid #000; border-bottom:none; font-weight:700; padding-top:8px;}
+</style>
+</head>
+<body>
+
+<!-- ===== Sticky header: brand row + hero balance card + quick actions ===== -->
+<div id="headerWrap">
+  <div id="topHeader">
+    <div class="brand">I.P.C.M BOUTEMA<small>Caisse espèces</small></div>
+    <div class="dateBadge" id="dateBadge">—</div>
+  </div>
+
+  <div id="topbar">
+    <div class="label">Solde caisse espèces</div>
+    <div class="balance" id="balanceDisplay">0<span class="cur">DZD</span></div>
+    <div class="subrow">
+      <div>Entrées&nbsp;<b id="sumIn">0</b></div>
+      <div>Sorties&nbsp;<b id="sumOut">0</b></div>
+    </div>
+  </div>
+
+  <div id="quickActions">
+    <button class="qa in" onclick="openAdd('in')"><div class="circ">↓</div><span>Entrée</span></button>
+    <button class="qa out" onclick="openAdd('out')"><div class="circ">↑</div><span>Sortie</span></button>
+    <button class="qa rep" onclick="showTab('rapports')"><div class="circ">▤</div><span>Rapports</span></button>
+    <button class="qa exp" onclick="exportData()"><div class="circ">⤓</div><span>Sauveg.</span></button>
+  </div>
+</div>
+
+<!-- ===== Main / Registre ===== -->
+<div id="main">
+  <div id="listWrap"></div>
+  <div id="empty" style="display:none;">
+    <div class="big">Aucun mouvement</div>
+    <div class="small">Appuyez sur « + » en bas pour enregistrer<br>votre première entrée ou sortie de caisse.</div>
+  </div>
+</div>
+
+<!-- ===== Bottom nav ===== -->
+<div id="navbar">
+  <button class="navbtn active" data-view="registre" onclick="showTab('registre')">
+    <div class="ic">☰</div><div>Registre</div>
+  </button>
+  <button class="navbtn fab" onclick="openAdd()">
+    <div class="ic">＋</div><div>Ajouter</div>
+  </button>
+  <button class="navbtn" data-view="rapports" onclick="showTab('rapports')">
+    <div class="ic">▤</div><div>Rapports</div>
+  </button>
+</div>
+
+<!-- ===== Sheet: Add entry ===== -->
+<div class="sheet" id="sheetAdd">
+  <div class="sheet-head">
+    <button class="iconbtn" onclick="closeSheet('sheetAdd')">✕</button>
+    <h2>Nouveau mouvement</h2>
+  </div>
+  <div class="sheet-body">
+    <div class="typetoggle">
+      <button id="btnTypeIn" onclick="setAddType('in')">↓ Entrée</button>
+      <button id="btnTypeOut" onclick="setAddType('out')">↑ Sortie</button>
+    </div>
+
+    <div class="field">
+      <label>Montant (DZD)</label>
+      <input type="number" inputmode="decimal" class="amount" id="fAmount" placeholder="0">
+    </div>
+
+    <div class="field">
+      <label>Description</label>
+      <input type="text" id="fDesc" placeholder="Ex : paie journalière, achat matériel...">
+    </div>
+
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="fDate">
+    </div>
+
+    <div class="field">
+      <label>Personne concernée <span style="font-weight:400; text-transform:none; color:#9aa5b1;">(optionnel)</span></label>
+      <input type="text" id="fPerson" placeholder="Nom de la personne">
+      <div class="hint">Utile si vous souhaitez imprimer une décharge pour ce mouvement.</div>
+    </div>
+
+    <div class="field">
+      <label>Motif <span style="font-weight:400; text-transform:none; color:#9aa5b1;">(optionnel)</span></label>
+      <input type="text" id="fMotif" placeholder="Ex : avance sur salaire, achat fournitures">
+    </div>
+
+    <div class="field">
+      <label>N° de pièce / référence <span style="font-weight:400; text-transform:none; color:#9aa5b1;">(optionnel)</span></label>
+      <input type="text" id="fRef" placeholder="Ex : facture n°12, bon n°034">
+    </div>
+
+    <button class="primary-btn brass" onclick="saveEntry()">Enregistrer</button>
+  </div>
+</div>
+
+<!-- ===== Sheet: Entry detail ===== -->
+<div class="sheet" id="sheetDetail">
+  <div class="sheet-head">
+    <button class="iconbtn" onclick="closeSheet('sheetDetail')">✕</button>
+    <h2>Détail du mouvement</h2>
+  </div>
+  <div class="sheet-body" id="detailBody"></div>
+</div>
+
+<!-- ===== Sheet: Rapports ===== -->
+<div class="sheet" id="sheetRapports">
+  <div class="sheet-head">
+    <button class="iconbtn" onclick="closeSheet('sheetRapports')">✕</button>
+    <h2>Rapports</h2>
+  </div>
+  <div class="sheet-body">
+    <div class="period-row" id="periodRow"></div>
+    <div class="kpi-grid">
+      <div class="kpi in"><div class="l">Total entrées</div><div class="v" id="repIn">0</div></div>
+      <div class="kpi out"><div class="l">Total sorties</div><div class="v" id="repOut">0</div></div>
+      <div class="kpi"><div class="l">Solde net période</div><div class="v" id="repNet">0</div></div>
+      <div class="kpi"><div class="l">Nb. mouvements</div><div class="v" id="repCount">0</div></div>
+    </div>
+    <button class="primary-btn brass" onclick="printReport()">🖨 Imprimer le rapport</button>
+    <button class="secondary-btn" onclick="exportData()">⤓ Exporter les données (sauvegarde)</button>
+    <button class="secondary-btn" onclick="document.getElementById('importFile').click()">⤒ Importer une sauvegarde</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+  </div>
+</div>
+
+<!-- ===== Hidden printable area ===== -->
+<div id="printArea"></div>
+
+<script>
+/* ---------- Data layer ---------- */
+const STORAGE_KEY = 'ipcm_caisse_espece_v1';
+const COMPANY = {
+  rs: "I.P.C.M BOUTEMA",
+  adresse: "Rue des Frères Djennadi, 3ème étage, Lot 35 Div 96, Blida",
+  rc: "09/00-4108712A23",
+  nif: "16922040023019500900",
+  nis: "196922040023050",
+  tel: "0550700196",
+  email: "direction.ipcmboutema@gmail.com"
+};
+
+let entries = loadEntries();
+let addType = 'in';
+let currentPeriod = 'total'; // 'total' or 'YYYY-MM'
+let currentDetailId = null;
+
+function loadEntries(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function persist(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+}
+function fmt(n){
+  return Math.round(n).toLocaleString('fr-FR');
+}
+function uid(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+
+/* ---------- Rendering: Registre ---------- */
+function computeBalance(){
+  let bal = 0;
+  entries.forEach(e => bal += (e.type === 'in' ? e.amount : -e.amount));
+  return bal;
+}
+function renderTopbar(){
+  document.getElementById('balanceDisplay').innerHTML = fmt(computeBalance()) + '<span class="cur">DZD</span>';
+  const sumIn = entries.filter(e=>e.type==='in').reduce((s,e)=>s+e.amount,0);
+  const sumOut = entries.filter(e=>e.type==='out').reduce((s,e)=>s+e.amount,0);
+  document.getElementById('sumIn').textContent = fmt(sumIn);
+  document.getElementById('sumOut').textContent = fmt(sumOut);
+}
+
+function renderList(){
+  const wrap = document.getElementById('listWrap');
+  const empty = document.getElementById('empty');
+  if(entries.length === 0){
+    wrap.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const sorted = [...entries].sort((a,b) => (b.date+b.id).localeCompare(a.date+a.id));
+  const groups = {};
+  sorted.forEach(e => { (groups[e.date] = groups[e.date] || []).push(e); });
+
+  let html = '';
+  Object.keys(groups).sort().reverse().forEach(date => {
+    html += `<div class="day-group"><div class="day-label">${formatDateLabel(date)}</div>`;
+    groups[date].forEach(e => {
+      html += `<div class="entry ${e.type}" onclick="openDetail('${e.id}')">
+        <div class="mark">${e.type === 'in' ? '↓' : '↑'}</div>
+        <div class="info">
+          <div class="desc">${escapeHtml(e.desc || (e.type==='in' ? 'Entrée caisse' : 'Sortie caisse'))}</div>
+          <div class="meta">${e.person ? escapeHtml(e.person) : (e.motif ? escapeHtml(e.motif) : '')}</div>
+        </div>
+        <div class="amt">${e.type==='in' ? '+' : '−'}${fmt(e.amount)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+function formatDateLabel(dateStr){
+  const d = new Date(dateStr + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const yest = new Date(today); yest.setDate(yest.getDate()-1);
+  if(d.getTime() === today.getTime()) return "Aujourd'hui";
+  if(d.getTime() === yest.getTime()) return "Hier";
+  return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+}
+function escapeHtml(s){
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+/* ---------- Tabs / sheets ---------- */
+function showTab(view){
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.navbtn[data-view="${view}"]`)?.classList.add('active');
+  if(view === 'rapports'){ openSheet('sheetRapports'); renderReports(); }
+}
+function openSheet(id){ document.getElementById(id).classList.add('open'); }
+function closeSheet(id){ document.getElementById(id).classList.remove('open'); }
+
+function openAdd(type){
+  document.getElementById('fAmount').value = '';
+  document.getElementById('fDesc').value = '';
+  document.getElementById('fPerson').value = '';
+  document.getElementById('fMotif').value = '';
+  document.getElementById('fRef').value = '';
+  document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
+  setAddType(type || 'in');
+  openSheet('sheetAdd');
+}
+function setAddType(t){
+  addType = t;
+  document.getElementById('btnTypeIn').classList.toggle('sel-in', t==='in');
+  document.getElementById('btnTypeOut').classList.toggle('sel-out', t==='out');
+}
+function saveEntry(){
+  const amount = parseFloat(document.getElementById('fAmount').value);
+  if(!amount || amount <= 0){ alert('Merci de saisir un montant valide.'); return; }
+  const date = document.getElementById('fDate').value || new Date().toISOString().slice(0,10);
+  const entry = {
+    id: uid(),
+    type: addType,
+    amount: amount,
+    desc: document.getElementById('fDesc').value.trim(),
+    person: document.getElementById('fPerson').value.trim(),
+    motif: document.getElementById('fMotif').value.trim(),
+    ref: document.getElementById('fRef').value.trim(),
+    date: date,
+    createdAt: new Date().toISOString()
+  };
+  entries.push(entry);
+  persist();
+  closeSheet('sheetAdd');
+  renderTopbar();
+  renderList();
+}
+
+/* ---------- Detail / décharge ---------- */
+function openDetail(id){
+  currentDetailId = id;
+  const e = entries.find(x => x.id === id);
+  if(!e) return;
+  const html = `
+    <div class="detail-amt ${e.type}">
+      <div class="n">${e.type==='in'?'+':'−'}${fmt(e.amount)} <span style="font-size:16px;">DZD</span></div>
+      <div class="t">${e.type==='in' ? 'Entrée en caisse' : 'Sortie de caisse'}</div>
+    </div>
+    <div class="detail-row"><div class="k">Date</div><div class="v">${new Date(e.date+'T00:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</div></div>
+    <div class="detail-row"><div class="k">Description</div><div class="v">${escapeHtml(e.desc || '—')}</div></div>
+    <div class="detail-row"><div class="k">Personne concernée</div><div class="v">${escapeHtml(e.person || '—')}</div></div>
+    <div class="detail-row"><div class="k">Motif</div><div class="v">${escapeHtml(e.motif || '—')}</div></div>
+    <div class="detail-row"><div class="k">N° pièce / référence</div><div class="v">${escapeHtml(e.ref || '—')}</div></div>
+    <button class="primary-btn brass" onclick="printDecharge('${e.id}')">🖨 Imprimer une décharge</button>
+    <button class="danger-link" onclick="deleteEntry('${e.id}')">Supprimer ce mouvement</button>
+  `;
+  document.getElementById('detailBody').innerHTML = html;
+  openSheet('sheetDetail');
+}
+function deleteEntry(id){
+  if(!confirm('Supprimer définitivement ce mouvement ?')) return;
+  entries = entries.filter(e => e.id !== id);
+  persist();
+  closeSheet('sheetDetail');
+  renderTopbar();
+  renderList();
+}
+
+/* ---------- Number to French words (DZD) ---------- */
+function numberToFrenchWords(n){
+  n = Math.round(n);
+  if(n === 0) return 'zéro';
+  const units = ['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix',
+    'onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+  const tens = ['','','vingt','trente','quarante','cinquante','soixante','soixante-dix','quatre-vingt','quatre-vingt-dix'];
+
+  function under1000(num){
+    let s = '';
+    const h = Math.floor(num/100), r = num%100;
+    if(h > 0){ s += (h>1? units[h]+' cent' : 'cent') + (h>1 && r===0 ? 's' : '') + (r>0?' ':''); }
+    if(r > 0){
+      if(r < 20){ s += units[r]; }
+      else {
+        const t = Math.floor(r/10), u = r%10;
+        if(t === 7 || t === 9){
+          s += tens[t-1] + '-' + units[10+u];
+        } else {
+          s += tens[t] + (u>0 ? (u===1 && t!==8 ? ' et un' : '-'+units[u]) : (t===8?'s':''));
+        }
+      }
+    }
+    return s;
+  }
+
+  const billions = Math.floor(n / 1e9);
+  const millions = Math.floor((n % 1e9) / 1e6);
+  const thousands = Math.floor((n % 1e6) / 1e3);
+  const rest = n % 1000;
+
+  let parts = [];
+  if(billions) parts.push(under1000(billions) + ' milliard' + (billions>1?'s':''));
+  if(millions) parts.push(under1000(millions) + ' million' + (millions>1?'s':''));
+  if(thousands) parts.push((thousands===1?'mille':under1000(thousands)+' mille'));
+  if(rest) parts.push(under1000(rest));
+
+  return parts.join(' ').replace(/\s+/g,' ').trim();
+}
+
+/* ---------- Print: décharge ---------- */
+function printDecharge(id){
+  const e = entries.find(x => x.id === id);
+  if(!e) return;
+  const dateStr = new Date(e.date+'T00:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  const words = numberToFrenchWords(e.amount);
+  const verb = e.type === 'out' ? 'reçu de la société' : 'remis à la société';
+  const docNum = 'D-' + e.date.slice(0,4) + '-' + String(entries.findIndex(x=>x.id===id)+1).padStart(4,'0');
+  const remisPar = e.type === 'out' ? (escapeHtml(COMPANY.rs)) : (escapeHtml(e.person) || '&nbsp;');
+  const recuPar = e.type === 'out' ? (escapeHtml(e.person) || '&nbsp;') : (escapeHtml(COMPANY.rs));
+  const html = `
+    <div class="doc-head">
+      <div class="rs">${COMPANY.rs}</div>
+      <div class="meta">
+        ${COMPANY.adresse}<br>
+        RC ${COMPANY.rc} — NIF ${COMPANY.nif} — NIS ${COMPANY.nis}<br>
+        Tél : ${COMPANY.tel} — ${COMPANY.email}
+      </div>
+    </div>
+    <div class="doc-title">DÉCHARGE</div>
+    <div class="doc-line">N° ${docNum} — Fait à Blida, le ${dateStr}${e.ref ? ' — Réf. pièce : ' + escapeHtml(e.ref) : ''}</div>
+    <div class="doc-line">Je soussigné(e) <span class="doc-blank">${escapeHtml(e.person) || '&nbsp;'}</span></div>
+    <div class="doc-line">reconnais avoir ${verb} <b>${COMPANY.rs}</b> la somme de :</div>
+    <div class="doc-amount-box">
+      <div class="n">${fmt(e.amount)} DZD</div>
+      <div>(${words} dinars algériens)</div>
+    </div>
+    <div class="doc-line">Au titre de : <span class="doc-blank" style="min-width:300px;">${escapeHtml(e.motif) || (escapeHtml(e.desc) || '&nbsp;')}</span></div>
+    <div class="sign-row">
+      <div class="sign-col"><div class="l">Remis par<br>${remisPar}</div></div>
+      <div class="sign-col"><div class="l">Reçu par<br>${recuPar}</div></div>
+    </div>
+  `;
+  document.getElementById('printArea').innerHTML = html;
+  window.print();
+}
+
+/* ---------- Reports ---------- */
+function monthKey(dateStr){ return dateStr.slice(0,7); }
+function monthLabel(key){
+  const [y,m] = key.split('-');
+  const d = new Date(parseInt(y), parseInt(m)-1, 1);
+  return d.toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
+}
+function availableMonths(){
+  const set = new Set(entries.map(e => monthKey(e.date)));
+  return [...set].sort().reverse();
+}
+function renderReports(){
+  const months = availableMonths();
+  const row = document.getElementById('periodRow');
+  let chips = `<button class="period-chip ${currentPeriod==='total'?'active':''}" onclick="selectPeriod('total')">Total</button>`;
+  months.forEach(m => {
+    chips += `<button class="period-chip ${currentPeriod===m?'active':''}" onclick="selectPeriod('${m}')">${monthLabel(m)}</button>`;
+  });
+  row.innerHTML = chips;
+  updateReportKpis();
+}
+function selectPeriod(p){ currentPeriod = p; renderReports(); }
+function filteredForPeriod(){
+  if(currentPeriod === 'total') return [...entries];
+  return entries.filter(e => monthKey(e.date) === currentPeriod);
+}
+function updateReportKpis(){
+  const list = filteredForPeriod();
+  const sumIn = list.filter(e=>e.type==='in').reduce((s,e)=>s+e.amount,0);
+  const sumOut = list.filter(e=>e.type==='out').reduce((s,e)=>s+e.amount,0);
+  document.getElementById('repIn').textContent = fmt(sumIn);
+  document.getElementById('repOut').textContent = fmt(sumOut);
+  document.getElementById('repNet').textContent = fmt(sumIn - sumOut);
+  document.getElementById('repCount').textContent = list.length;
+}
+
+function printReport(){
+  const list = filteredForPeriod().sort((a,b) => (a.date+a.id).localeCompare(b.date+b.id));
+  const periodTitle = currentPeriod === 'total' ? 'Rapport global' : 'Rapport mensuel — ' + monthLabel(currentPeriod);
+
+  let running = 0;
+  // if period is a month, base balance = balance of all entries strictly before that month
+  if(currentPeriod !== 'total'){
+    entries.forEach(e => { if(e.date < currentPeriod + '-01') running += (e.type==='in'?e.amount:-e.amount); });
+  }
+  let rows = '';
+  list.forEach(e => {
+    running += (e.type === 'in' ? e.amount : -e.amount);
+    rows += `<tr>
+      <td>${new Date(e.date+'T00:00:00').toLocaleDateString('fr-FR')}</td>
+      <td>${escapeHtml(e.desc || (e.type==='in'?'Entrée':'Sortie'))}</td>
+      <td>${escapeHtml(e.person||'—')}</td>
+      <td>${e.type==='in'?'Entrée':'Sortie'}</td>
+      <td class="num">${e.type==='in'?'+':'−'}${fmt(e.amount)}</td>
+      <td class="num">${fmt(running)}</td>
+    </tr>`;
+  });
+  const sumIn = list.filter(e=>e.type==='in').reduce((s,e)=>s+e.amount,0);
+  const sumOut = list.filter(e=>e.type==='out').reduce((s,e)=>s+e.amount,0);
+
+  const html = `
+    <div class="doc-head">
+      <div class="rs">${COMPANY.rs}</div>
+      <div class="meta">
+        ${COMPANY.adresse}<br>
+        RC ${COMPANY.rc} — NIF ${COMPANY.nif} — NIS ${COMPANY.nis}
+      </div>
+    </div>
+    <div class="doc-title">${periodTitle.toUpperCase()}</div>
+    <div class="doc-line" style="margin-bottom:16px;">Édité le ${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})} — Solde caisse au ${new Date().toLocaleDateString('fr-FR')} : <b>${fmt(computeBalance())} DZD</b></div>
+    <table class="rep">
+      <thead><tr><th>Date</th><th>Description</th><th>Personne</th><th>Type</th><th class="num">Montant</th><th class="num">Solde</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="6" style="padding:12px 4px; color:#666;">Aucun mouvement sur cette période.</td></tr>'}</tbody>
+      <tfoot>
+        <tr class="rep-foot"><td colspan="4">Total entrées</td><td class="num">${fmt(sumIn)}</td><td></td></tr>
+        <tr class="rep-foot"><td colspan="4">Total sorties</td><td class="num">${fmt(sumOut)}</td><td></td></tr>
+        <tr class="rep-foot"><td colspan="4">Solde net période</td><td class="num">${fmt(sumIn-sumOut)}</td><td></td></tr>
+      </tfoot>
+    </table>
+  `;
+  document.getElementById('printArea').innerHTML = html;
+  window.print();
+}
+
+/* ---------- Backup / restore ---------- */
+function exportData(){
+  const blob = new Blob([JSON.stringify({entries, exportedAt:new Date().toISOString()}, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'caisse_ipcm_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importData(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!Array.isArray(data.entries)) throw new Error('format invalide');
+      if(confirm(`Importer ${data.entries.length} mouvement(s) ? Cela remplacera les données actuelles.`)){
+        entries = data.entries;
+        persist();
+        renderTopbar(); renderList(); renderReports();
+        alert('Import réussi.');
+      }
+    }catch(err){
+      alert("Fichier invalide, impossible d'importer.");
+    }
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
+}
+
+/* ---------- Init ---------- */
+document.getElementById('dateBadge').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'short', day:'2-digit', month:'short'});
+renderTopbar();
+renderList();
+</script>
+</body>
+</html>
