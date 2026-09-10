@@ -1,13 +1,32 @@
 {
   "name": "Caisse Espèces — IPCM BOUTEMA",
   "short_name": "Caisse IPCM",
+  "description": "Gestion de la caisse espèces — registre, paie des ouvriers, décharges et rapports.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#F5F6FA",
-  "theme_color": "#1E3B72",
+  "background_color": "#f2f2f7",
+  "theme_color": "#f2f2f7",
   "orientation": "portrait",
+  "lang": "fr",
   "icons": [
-    { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    {
+      "src": "icons/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

@@ -1,28 +1,33 @@
 # Caisse Espèces — I.P.C.M BOUTEMA
 
-Application web mono-utilisateur pour gérer la caisse espèces de l'entreprise, installable sur iPhone comme une vraie app (PWA).
+Application web mono-utilisateur (PWA) pour gérer la caisse espèces de l'entreprise.
+Interface refondue en septembre 2026 : composants natifs iOS (listes groupées, feuilles
+modales glissables, pavé numérique, barre d'onglets translucide, glisser-pour-supprimer).
 
-**App en ligne :** https://yousefipcm-debug.github.io/CAISSE/
+## Contenu
 
-## Fonctionnalités
-
-- Enregistrement des entrées et sorties de caisse (montant, description, date, personne, motif, référence)
-- Solde recalculé automatiquement
-- Impression de décharges individuelles (montant en chiffres et en lettres)
-- **Paie des ouvriers** : tableau nom + salaire, génère un état de paie imprimable avec case de signature par ouvrier, et enregistre automatiquement chaque paiement comme sortie de caisse
-- Rapports mensuels / globaux imprimables
-- Export / import des données en JSON (sauvegarde)
+- `index.html` — l'application entière (HTML + CSS + JS, aucune dépendance)
+- `manifest.json` — manifeste PWA
+- `icons/` — icônes 180px et 512px
 
 ## Installation sur iPhone
 
-1. Ouvrir le lien ci-dessus dans **Safari** (pas Chrome)
-2. Appuyer sur le bouton Partager → **« Ajouter à l'écran d'accueil »**
-3. L'app s'ouvre en plein écran comme une vraie application
+1. Publier le dossier (GitHub Pages, ou tout hébergement HTTPS).
+2. Ouvrir l'adresse dans Safari.
+3. Partager → « Sur l'écran d'accueil ».
 
-## Stockage des données
+L'app s'ouvre alors en plein écran, sans barre Safari.
 
-Toutes les données (mouvements de caisse) sont stockées **uniquement en local sur l'appareil** (localStorage du navigateur) — rien n'est envoyé sur un serveur. Il est donc important d'exporter une sauvegarde régulièrement (bouton *Exporter les données* dans l'onglet Rapports) et de la conserver ailleurs (iCloud Drive, e-mail, etc.).
+## Fonctions
 
-## Développement
+- **Registre** — solde, totaux entrées/sorties, mouvements groupés par jour ; glisser une ligne vers la gauche pour supprimer.
+- **Nouveau mouvement** — pavé numérique, montant en toutes lettres, description, date, personne, motif, référence.
+- **Décharge** — document A4 imprimable (en-tête société, montant en lettres, deux signatures).
+- **Paie** — saisie ouvrier par ouvrier ; enregistre une sortie par ligne et imprime l'état de paie à signer.
+- **Rapports** — filtre par mois, entrées/sorties/solde net, rapport A4 avec solde courant.
+- **Sauvegarde** — export et import JSON. Les données restent sur l'appareil (localStorage).
 
-Fichier unique `index.html`, sans dépendance ni étape de build — toute modification se fait directement dans ce fichier.
+## Données
+
+Tout est stocké dans le `localStorage` du navigateur, clé `ipcm_caisse_espece_v1`.
+Exportez une sauvegarde régulièrement : effacer les données Safari efface le registre.

@@ -4,842 +4,736 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Caisse Espèces — IPCM BOUTEMA</title>
-
-<!-- iOS Add-to-Home-Screen / standalone app support -->
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Caisse IPCM">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#1E3B72">
+<meta name="theme-color" content="#f2f2f7">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-180.png">
-
 <style>
-  :root{
-    --navy:#1E3B72;
-    --navy-2:#2C4E92;
-    --navy-deep:#142348;
-    --navy-text:#16294F;
-    --gold:#F6C445;
-    --gold-dark:#E0A91F;
-    --pink:#EE4F98;
-    --pink-bg:#FDE7F1;
-    --blue2:#3D7DF6;
-    --blue2-bg:#E8F0FE;
-    --purple:#8A6CF0;
-    --bg:#F5F6FA;
-    --surface:#FFFFFF;
-    --field:#F5F7FB;
-    --line:#E7E9F0;
-    --muted:#8A93A6;
-    --in:#1FAE7A;
-    --in-bg:#E4F7EE;
-    --out:#E5484D;
-    --out-bg:#FCEAEA;
-    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --font-num: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{margin:0; padding:0; background:var(--bg); color:var(--navy-text); font-family:var(--font-ui); height:100%;}
-  body{display:flex; flex-direction:column; min-height:100vh;}
-  button{font-family:inherit; cursor:pointer;}
-  input,select,textarea{font-family:inherit;}
-
-  /* ---------- Sticky header group ---------- */
-  #headerWrap{position:sticky; top:0; z-index:20; background:var(--bg); padding-bottom:14px;}
-
-  #topHeader{display:flex; align-items:center; justify-content:space-between; padding:calc(16px + env(safe-area-inset-top)) 20px 10px;}
-  #topHeader .brand{font-size:13px; font-weight:800; color:var(--navy-text); letter-spacing:.01em;}
-  #topHeader .brand small{display:block; font-weight:500; color:var(--muted); font-size:11.5px; margin-top:2px;}
-  #topHeader .dateBadge{background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:7px 13px; font-size:11.5px; font-weight:700; color:var(--navy); text-transform:capitalize;}
-
-  /* Hero balance card */
-  #topbar{
-    background:linear-gradient(135deg, var(--navy-2), var(--navy-deep) 85%);
-    color:#fff; margin:2px 16px 0; border-radius:26px;
-    padding:20px 22px 30px; position:relative; overflow:hidden;
-    box-shadow:0 16px 30px -12px rgba(20,35,72,.55);
-  }
-  #topbar::after{content:""; position:absolute; right:-40px; top:-50px; width:160px; height:160px; border-radius:50%; background:rgba(255,255,255,.06);}
-  #topbar .label{font-size:12px; color:#B9C6E8; margin-bottom:6px; position:relative;}
-  #topbar .balance{font-family:var(--font-num); font-size:33px; font-weight:700; letter-spacing:-0.5px; font-variant-numeric:tabular-nums; position:relative;}
-  #topbar .balance span.cur{font-size:15px; font-weight:500; color:#B9C6E8; margin-left:6px;}
-  #topbar .subrow{display:flex; gap:20px; margin-top:12px; font-size:12px; color:#B9C6E8; position:relative;}
-  #topbar .subrow b{color:#fff; font-family:var(--font-num); font-variant-numeric:tabular-nums; font-weight:700;}
-
-  /* Quick action icons overlapping hero card */
-  #quickActions{display:flex; justify-content:space-between; padding:0 26px; margin-top:-24px; position:relative; z-index:6;}
-  .qa{display:flex; flex-direction:column; align-items:center; gap:7px; background:none; border:none; padding:0;}
-  .qa .circ{width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:19px; color:#fff; box-shadow:0 10px 18px -8px rgba(20,35,72,.45); border:3px solid var(--bg);}
-  .qa span{font-size:10.5px; font-weight:700; color:var(--navy-text);}
-  .qa.in .circ{background:var(--pink);}
-  .qa.out .circ{background:var(--blue2);}
-  .qa.pay .circ{background:var(--purple);}
-  .qa.rep .circ{background:var(--gold); color:var(--navy-deep);}
-
-  /* ---------- Main scroll area ---------- */
-  #main{flex:1; overflow-y:auto; padding:16px 0 110px;}
-
-  /* Registre list */
-  .day-group{padding:6px 16px 2px;}
-  .day-label{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700; margin-bottom:8px;}
-  .entry{
-    background:var(--surface); border:none; border-radius:18px;
-    padding:13px 15px; margin-bottom:10px; display:flex; align-items:center; gap:12px;
-    box-shadow:0 8px 18px -12px rgba(20,35,72,.35);
-  }
-  .entry .mark{width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:700; flex-shrink:0;}
-  .entry.in .mark{background:var(--in-bg); color:var(--in);}
-  .entry.out .mark{background:var(--out-bg); color:var(--out);}
-  .entry .info{flex:1; min-width:0;}
-  .entry .desc{font-size:14.5px; font-weight:700; color:var(--navy-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .entry .meta{font-size:12px; color:var(--muted); margin-top:2px;}
-  .entry .amt{font-family:var(--font-num); font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; flex-shrink:0;}
-  .entry.in .amt{color:var(--in);}
-  .entry.out .amt{color:var(--out);}
-
-  #empty{padding:60px 30px; text-align:center; color:var(--muted);}
-  #empty .big{font-size:15px; font-weight:700; color:var(--navy-text); margin-bottom:6px;}
-  #empty .small{font-size:13px; line-height:1.5;}
-
-  /* ---------- Bottom nav (floating pill with FAB) ---------- */
-  #navbar{
-    position:fixed; left:16px; right:16px; bottom:calc(14px + env(safe-area-inset-bottom));
-    background:var(--navy-deep); border-radius:30px; display:flex; align-items:center;
-    padding:8px 14px; z-index:30; box-shadow:0 18px 32px -12px rgba(20,35,72,.55);
-  }
-  .navbtn{flex:1; border:none; background:none; padding:8px 0; display:flex; flex-direction:column; align-items:center; gap:3px; color:#8FA0CC; font-size:10.5px; font-weight:600;}
-  .navbtn.active{color:#fff;}
-  .navbtn .ic{font-size:19px; line-height:1;}
-  .navbtn.fab{color:var(--navy-deep); position:relative;}
-  .navbtn.fab .ic{
-    width:54px; height:54px; border-radius:50%; background:var(--gold); color:var(--navy-deep);
-    display:flex; align-items:center; justify-content:center; font-size:25px; font-weight:700;
-    margin-top:-30px; border:4px solid var(--bg); box-shadow:0 12px 22px -8px rgba(0,0,0,.4);
-  }
-  .navbtn.fab div:last-child{opacity:0;}
-
-  /* ---------- Sheets (full screen overlays) ---------- */
-  .sheet{
-    position:fixed; inset:0; background:var(--bg); z-index:50;
-    display:none; flex-direction:column;
-  }
-  .sheet.open{display:flex;}
-  .sheet-head{
-    background:linear-gradient(135deg, var(--navy-2), var(--navy-deep) 85%); color:#fff;
-    padding:calc(16px + env(safe-area-inset-top)) 16px 18px; display:flex; align-items:center; gap:12px;
-    position:sticky; top:0; border-radius:0 0 22px 22px;
-  }
-  .sheet-head h2{font-size:16px; margin:0; font-weight:700; flex:1;}
-  .iconbtn{background:rgba(255,255,255,.14); border:none; color:#fff; width:32px; height:32px; border-radius:10px; font-size:16px; display:flex; align-items:center; justify-content:center;}
-  .sheet-body{flex:1; overflow-y:auto; padding:20px 16px 40px;}
-
-  /* Toggle IN/OUT */
-  .typetoggle{display:flex; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:4px; margin-bottom:18px; box-shadow:0 6px 14px -10px rgba(20,35,72,.3);}
-  .typetoggle button{flex:1; border:none; background:none; padding:11px 0; border-radius:11px; font-size:14px; font-weight:700; color:var(--muted);}
-  .typetoggle button.sel-in{background:var(--pink-bg); color:var(--pink);}
-  .typetoggle button.sel-out{background:var(--blue2-bg); color:var(--blue2);}
-
-  .field{margin-bottom:16px;}
-  .field label{display:block; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:7px; text-transform:uppercase; letter-spacing:.03em;}
-  .field input, .field textarea{
-    width:100%; border:1px solid var(--line); background:var(--field); border-radius:14px;
-    padding:13px 14px; font-size:15px; color:var(--navy-text);
-  }
-  .field input.amount{font-family:var(--font-num); font-size:22px; font-weight:700; font-variant-numeric:tabular-nums;}
-  .field textarea{resize:vertical; min-height:44px;}
-  .hint{font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.4;}
-
-  .primary-btn{
-    width:100%; background:var(--navy); color:#fff; border:none; border-radius:16px;
-    padding:16px; font-size:15px; font-weight:700; margin-top:6px;
-  }
-  .primary-btn.brass{background:var(--gold); color:var(--navy-deep);}
-  .secondary-btn{
-    width:100%; background:var(--surface); color:var(--navy-text); border:1px solid var(--line); border-radius:16px;
-    padding:14px; font-size:14px; font-weight:700; margin-top:10px;
-  }
-  .danger-link{width:100%; background:none; border:none; color:var(--out); font-size:13px; padding:14px; margin-top:4px; font-weight:600;}
-
-  /* Detail sheet rows */
-  .detail-row{display:flex; justify-content:space-between; padding:13px 0; border-bottom:1px solid var(--line); font-size:14px;}
-  .detail-row .k{color:var(--muted);}
-  .detail-row .v{font-weight:700; text-align:right; max-width:60%;}
-  .detail-amt{text-align:center; padding:24px 0 10px;}
-  .detail-amt .n{font-family:var(--font-num); font-size:36px; font-weight:800; font-variant-numeric:tabular-nums;}
-  .detail-amt.in .n{color:var(--in);}
-  .detail-amt.out .n{color:var(--out);}
-  .detail-amt .t{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:5px; font-weight:700;}
-
-  /* Reports */
-  .period-row{display:flex; gap:8px; margin-bottom:18px; overflow-x:auto; padding-bottom:2px;}
-  .period-chip{flex-shrink:0; border:1px solid var(--line); background:var(--surface); border-radius:20px; padding:9px 16px; font-size:13px; font-weight:700; color:var(--muted);}
-  .period-chip.active{background:var(--navy); color:#fff; border-color:var(--navy);}
-  .kpi-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px;}
-  .kpi{background:var(--surface); border:none; border-radius:16px; padding:15px; box-shadow:0 8px 18px -12px rgba(20,35,72,.3);}
-  .kpi .l{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px; font-weight:700;}
-  .kpi .v{font-family:var(--font-num); font-size:19px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--navy-text);}
-  .kpi.in .v{color:var(--in);}
-  .kpi.out .v{color:var(--out);}
-
-  /* Paie (payroll table) */
-  .paie-row{display:flex; gap:8px; margin-bottom:10px; align-items:center;}
-  .paie-row .pName{flex:1.5;}
-  .paie-row .pAmount{flex:1; font-family:var(--font-num); font-variant-numeric:tabular-nums;}
-  .paie-row input{width:100%; border:1px solid var(--line); background:var(--field); border-radius:12px; padding:11px 12px; font-size:14px; color:var(--navy-text);}
-  .paie-row .pRemove{background:var(--out-bg); color:var(--out); border:none; width:36px; height:36px; border-radius:10px; font-size:14px; flex-shrink:0;}
-  .add-row-btn{width:100%; background:var(--field); border:1.5px dashed var(--line); color:var(--navy); border-radius:12px; padding:12px; font-size:13.5px; font-weight:700; margin-bottom:16px;}
-  .paie-total{display:flex; justify-content:space-between; align-items:center; background:var(--surface); border-radius:14px; padding:14px 16px; margin:14px 0 18px; box-shadow:0 8px 18px -12px rgba(20,35,72,.3);}
-  .paie-total .l{font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.03em;}
-  .paie-total .v{font-family:var(--font-num); font-size:20px; font-weight:800; color:var(--navy-text);}
-
-  /* ---------- Print ---------- */
-  #printArea{display:none;}
-  @media print{
-    body *{visibility:hidden;}
-    #printArea, #printArea *{visibility:visible;}
-    #printArea{display:block; position:absolute; top:0; left:0; width:100%; padding:20px; color:#000; font-family: Georgia, "Times New Roman", serif;}
-    .noprint{display:none !important;}
-  }
-  .doc-head{border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:22px;}
-  .doc-head .rs{font-size:16px; font-weight:700; letter-spacing:.02em;}
-  .doc-head .meta{font-size:11px; margin-top:4px; line-height:1.5;}
-  .doc-title{text-align:center; font-size:20px; font-weight:700; letter-spacing:.08em; margin:22px 0 26px;}
-  .doc-line{font-size:13.5px; line-height:2; margin-bottom:8px;}
-  .doc-blank{border-bottom:1px solid #000; display:inline-block; min-width:160px; padding:0 4px;}
-  .doc-amount-box{border:1px solid #000; padding:14px; margin:20px 0; text-align:center; font-size:15px;}
-  .doc-amount-box .n{font-size:22px; font-weight:700; font-family:'Courier New', monospace;}
-  .sign-row{display:flex; justify-content:space-between; margin-top:60px;}
-  .sign-col{width:45%; text-align:center; font-size:12.5px;}
-  .sign-col .l{border-top:1px solid #000; margin-top:50px; padding-top:6px;}
-  table.rep{width:100%; border-collapse:collapse; font-size:12px; margin-top:8px;}
-  table.rep th{text-align:left; border-bottom:2px solid #000; padding:6px 4px; font-size:10.5px; text-transform:uppercase;}
-  table.rep td{padding:6px 4px; border-bottom:1px solid #ccc;}
-  table.rep td.num, table.rep th.num{text-align:right; font-family:'Courier New', monospace;}
-  .rep-foot td{border-top:2px solid #000; border-bottom:none; font-weight:700; padding-top:8px;}
-  table.rep td.sig-cell{height:38px; border-bottom:1px solid #000;}
+:root{
+  --bg:#f2f2f7; --card:#fff; --sep:#ececf0; --sep2:#e2e2e6;
+  --ink:#000; --grey:#8a8a8e; --blue:#007aff; --green:#34c759; --green-d:#2aa74c;
+  --red:#ff3b30; --red-d:#e02c22; --chrome:rgba(249,249,251,.94);
+  --font:-apple-system,"SF Pro Text","SF Pro Display",system-ui,"Helvetica Neue",sans-serif;
+  --safe-t:env(safe-area-inset-top); --safe-b:env(safe-area-inset-bottom);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+button,input{font-family:inherit;color:inherit}
+input{outline:none;border:none;background:transparent}
+input::placeholder{color:#b5b5ba}
+.tap{transition:opacity .12s ease}
+.tap:active{opacity:.55}
+.row:active{background:#e5e5ea}
+#navbar{position:fixed;left:0;right:0;top:0;height:calc(44px + var(--safe-t));z-index:20;background:rgba(249,249,251,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:.5px solid #d1d1d6;display:flex;align-items:flex-end;justify-content:center;padding-bottom:9px;opacity:0;transition:opacity .18s ease;pointer-events:none}
+#navbar.on{opacity:1}
+#navbar span{font-size:17px;font-weight:600;letter-spacing:-.2px}
+#scroll{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:calc(12px + var(--safe-t))}
+#scroll::-webkit-scrollbar{width:0}
+.lt{padding:4px 16px 0;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.lt h1{font-size:34px;font-weight:700;letter-spacing:-.5px;line-height:1.1;margin:0}
+.lt .sub{font-size:13px;color:var(--grey);margin-top:2px}
+.addbtn{width:34px;height:34px;border-radius:17px;border:none;background:rgba(0,122,255,.12);display:flex;align-items:center;justify-content:center;flex:none}
+.pane{padding:16px 16px 150px;display:none}
+.pane.on{display:block}
+.card{background:var(--card);border-radius:16px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.bal{padding:18px 18px 16px}
+.bal .l{font-size:13px;color:var(--grey)}
+.bal .n{font-size:40px;font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums;line-height:1.05}
+.bal .cur{font-size:15px;font-weight:600;color:var(--grey);margin-left:5px}
+.split{display:flex;gap:14px;margin-top:16px;padding-top:14px;border-top:.5px solid var(--sep2)}
+.split>div{flex:1;display:flex;align-items:center;gap:9px}
+.dot{width:26px;height:26px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex:none}
+.dot.in{background:rgba(52,199,89,.14)} .dot.out{background:rgba(255,59,48,.13)}
+.split .k{font-size:11px;color:var(--grey)} .split .v{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.vline{width:.5px;background:var(--sep2)}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.quick button{border:none;background:var(--card);border-radius:14px;padding:14px 15px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 2px rgba(0,0,0,.06);font-size:15px;font-weight:600;letter-spacing:-.2px}
+.quick .circ{width:30px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center}
+.circ.in{background:var(--green)} .circ.out{background:var(--red)}
+.gh{font-size:13px;font-weight:600;color:var(--grey);padding:22px 4px 7px}
+.group{background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.swipe{position:relative;overflow:hidden;background:var(--red)}
+.swipe .del{position:absolute;right:0;top:0;bottom:0;width:84px;border:none;background:var(--red);color:#fff;font-size:14px;font-weight:600}
+.item{position:relative;display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--card);border-top:.5px solid var(--sep);touch-action:pan-y;transition:transform .26s cubic-bezier(.32,.72,0,1)}
+.group .item:first-child,.group>.swipe:first-child .item{border-top:none}
+.item .mark{width:34px;height:34px;border-radius:17px;flex:none;display:flex;align-items:center;justify-content:center}
+.item .mark.in{background:rgba(52,199,89,.14)} .item .mark.out{background:rgba(255,59,48,.13)}
+.item .txt{flex:1;min-width:0}
+.item .d{font-size:16px;font-weight:500;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .m{font-size:13px;color:var(--grey);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .a{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.2px}
+.item .a.in{color:var(--green-d)} .item .a.out{color:var(--red-d)}
+.chev{flex:none}
+.lrow{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:.5px solid var(--sep);background:var(--card)}
+.group>.lrow:first-child{border-top:none}
+.lrow .lk{font-size:16px;width:104px;flex:none}
+.lrow input{flex:1;min-width:0;font-size:16px;text-align:right}
+.lrow input[type=date]{color:var(--grey)}
+.btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:13px;padding:15px;font-size:17px;font-weight:600;letter-spacing:-.2px;margin-top:16px}
+.btn.plain{background:var(--card);color:var(--blue);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.btn.danger{background:var(--card);color:var(--red);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.note{font-size:13px;color:var(--grey);padding:8px 4px;line-height:1.4}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.chips::-webkit-scrollbar{height:0}
+.chip{flex:none;border:none;border-radius:16px;padding:8px 14px;font-size:14px;font-weight:600;background:var(--card);color:#1c1c1e}
+.chip.on{background:var(--blue);color:#fff}
+.bar{height:8px;border-radius:4px;background:#eeeef2;overflow:hidden}
+.bar i{display:block;height:8px;border-radius:4px;transition:width .4s ease}
+.paierow{display:flex;align-items:center;gap:8px;padding:6px 14px;border-top:.5px solid var(--sep);background:var(--card)}
+.paierow .rm{width:22px;height:22px;border-radius:11px;border:none;background:var(--red);flex:none;display:flex;align-items:center;justify-content:center}
+.paierow .nm{flex:1;min-width:0;padding:11px 0;font-size:16px}
+.paierow .am{width:96px;padding:11px 0;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+#tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--chrome);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:.5px solid #d1d1d6;padding:7px 8px calc(6px + var(--safe-b));display:grid;grid-template-columns:1fr 1fr 1fr;z-index:15}
+#tabbar button{border:none;background:none;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--grey);font-size:10px;font-weight:500}
+#tabbar button.on{color:var(--blue)}
+#backdrop{position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:28;opacity:0;pointer-events:none;transition:opacity .28s ease}
+#backdrop.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;top:calc(44px + var(--safe-t));bottom:0;background:var(--bg);border-radius:12px 12px 0 0;z-index:30;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -2px 20px rgba(0,0,0,.18);transform:translateY(110%);transition:transform .34s cubic-bezier(.32,.72,0,1);visibility:hidden}
+.sheet.on{transform:translateY(0);visibility:visible}
+.grab{padding:8px 0 0;display:flex;justify-content:center;touch-action:none;cursor:grab}
+.grab i{width:36px;height:5px;border-radius:3px;background:#c7c7cc;display:block}
+.shead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px 12px;border-bottom:.5px solid #d8d8dd}
+.shead .t{font-size:17px;font-weight:600;letter-spacing:-.2px}
+.shead button{border:none;background:none;font-size:17px;color:var(--blue);padding:0}
+.shead button.strong{font-weight:600}
+.shead button:disabled{color:#b5b5ba}
+.sbody{flex:1;overflow-y:auto;padding:14px 16px 16px}
+.sbody::-webkit-scrollbar{width:0}
+.seg{background:#eeeef2;border-radius:9px;padding:2px;display:grid;grid-template-columns:1fr 1fr}
+.seg button{border:none;border-radius:7px;padding:8px 0;font-size:14px;font-weight:600;background:transparent;color:#3c3c43;transition:background .16s ease,color .16s ease}
+.seg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.seg button.on.in{color:var(--green-d)} .seg button.on.out{color:var(--red-d)}
+.amount{margin-top:14px;padding:16px;text-align:center}
+.amount .l{font-size:13px;color:var(--grey)}
+.amount .n{font-size:42px;font-weight:700;letter-spacing:-1.2px;font-variant-numeric:tabular-nums;line-height:1.15;color:#c7c7cc}
+.amount .n.in{color:var(--green-d)} .amount .n.out{color:var(--red-d)}
+.amount .w{font-size:12.5px;color:var(--grey);line-height:1.35}
+#pad{background:#d1d3d9;padding:8px 5px calc(8px + var(--safe-b));border-top:.5px solid #b9bbc1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+#pad button{border:none;border-radius:5px;background:#fff;height:46px;font-size:24px;box-shadow:0 1px 0 rgba(0,0,0,.28);transition:background .09s ease}
+#pad button.alt{background:#adb1ba}
+#pad button:active{background:#c7c7cc}
+.dhead{text-align:center}
+.dhead .mark{width:52px;height:52px;border-radius:26px;margin:0 auto;display:flex;align-items:center;justify-content:center}
+.dhead .n{font-size:36px;font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums;margin-top:10px}
+.dhead .k{font-size:14px;color:var(--grey);margin-top:2px}
+.dhead .w{font-size:13px;color:var(--grey);margin-top:2px;line-height:1.35}
+#actionsheet{position:fixed;left:8px;right:8px;bottom:calc(16px + var(--safe-b));z-index:40;transform:translateY(140%);transition:transform .26s cubic-bezier(.32,.72,0,1)}
+#actionsheet.on{transform:translateY(0)}
+#actionsheet .grp{background:rgba(249,249,251,.96);backdrop-filter:blur(20px);border-radius:14px;overflow:hidden}
+#actionsheet .msg{padding:14px 16px;text-align:center;font-size:13px;color:var(--grey);border-bottom:.5px solid #d8d8dd}
+#actionsheet button{width:100%;border:none;background:transparent;padding:15px;font-size:19px}
+#actionsheet .destructive{color:var(--red)}
+#actionsheet .cancel{margin-top:8px;background:rgba(255,255,255,.96);border-radius:14px;font-weight:600;color:var(--blue)}
+#toast{position:fixed;left:50%;transform:translateX(-50%) translateY(14px);bottom:calc(86px + var(--safe-b));background:rgba(28,28,30,.92);color:#fff;padding:11px 18px;border-radius:22px;z-index:45;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;padding:70px 30px}
+.empty .b{font-size:19px;font-weight:600}
+.empty .s{font-size:14px;color:var(--grey);margin-top:5px;line-height:1.4}
+/* ---------- Print ---------- */
+#printArea{display:none}
+@media print{
+  body *{visibility:hidden}
+  #printArea,#printArea *{visibility:visible}
+  #printArea{display:block;position:absolute;top:0;left:0;width:100%;padding:20px;color:#000;font-family:Georgia,"Times New Roman",serif}
+}
+.doc-head{border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:22px}
+.doc-head .rs{font-size:16px;font-weight:700;letter-spacing:.02em}
+.doc-head .meta{font-size:11px;margin-top:4px;line-height:1.5}
+.doc-title{text-align:center;font-size:20px;font-weight:700;letter-spacing:.08em;margin:22px 0 26px}
+.doc-line{font-size:13.5px;line-height:2;margin-bottom:8px}
+.doc-blank{border-bottom:1px solid #000;display:inline-block;min-width:160px;padding:0 4px}
+.doc-amount-box{border:1px solid #000;padding:14px;margin:20px 0;text-align:center;font-size:15px}
+.doc-amount-box .n{font-size:22px;font-weight:700;font-family:'Courier New',monospace}
+.sign-row{display:flex;justify-content:space-between;margin-top:60px}
+.sign-col{width:45%;text-align:center;font-size:12.5px}
+.sign-col .l{border-top:1px solid #000;margin-top:50px;padding-top:6px}
+table.rep{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+table.rep th{text-align:left;border-bottom:2px solid #000;padding:6px 4px;font-size:10.5px;text-transform:uppercase}
+table.rep td{padding:6px 4px;border-bottom:1px solid #ccc}
+table.rep td.num,table.rep th.num{text-align:right;font-family:'Courier New',monospace}
+.rep-foot td{border-top:2px solid #000;border-bottom:none;font-weight:700;padding-top:8px}
+table.rep td.sig-cell{height:38px;border-bottom:1px solid #000}
 </style>
 </head>
 <body>
 
-<!-- ===== Sticky header: brand row + hero balance card + quick actions ===== -->
-<div id="headerWrap">
-  <div id="topHeader">
-    <div class="brand">I.P.C.M BOUTEMA<small>Caisse espèces</small></div>
-    <div class="dateBadge" id="dateBadge">—</div>
+<div id="navbar"><span id="navTitle">Caisse</span></div>
+
+<div id="scroll">
+  <div class="lt">
+    <div>
+      <h1 id="bigTitle">Caisse</h1>
+      <div class="sub" id="bigSub">—</div>
+    </div>
+    <button class="addbtn tap" onclick="openAdd('out')" aria-label="Ajouter">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#007aff" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+    </button>
   </div>
 
-  <div id="topbar">
-    <div class="label">Solde caisse espèces</div>
-    <div class="balance" id="balanceDisplay">0<span class="cur">DZD</span></div>
-    <div class="subrow">
-      <div>Entrées&nbsp;<b id="sumIn">0</b></div>
-      <div>Sorties&nbsp;<b id="sumOut">0</b></div>
+  <!-- REGISTRE -->
+  <div class="pane on" id="paneRegistre">
+    <div class="card bal">
+      <div class="l">Solde disponible</div>
+      <div><span class="n" id="balance">0</span><span class="cur">DZD</span></div>
+      <div class="split">
+        <div>
+          <div class="dot in"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2aa74c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg></div>
+          <div><div class="k">Entrées</div><div class="v" id="sumIn">0</div></div>
+        </div>
+        <div class="vline"></div>
+        <div>
+          <div class="dot out"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e02c22" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></div>
+          <div><div class="k">Sorties</div><div class="v" id="sumOut">0</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick">
+      <button class="tap" onclick="openAdd('in')"><span class="circ in"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg></span>Entrée</button>
+      <button class="tap" onclick="openAdd('out')"><span class="circ out"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></span>Sortie</button>
+    </div>
+
+    <div id="listWrap"></div>
+    <div class="empty" id="empty" style="display:none">
+      <div class="b">Aucun mouvement</div>
+      <div class="s">Touchez « + » pour enregistrer votre première entrée ou sortie de caisse.</div>
     </div>
   </div>
 
-  <div id="quickActions">
-    <button class="qa in" onclick="openAdd('in')"><div class="circ">↓</div><span>Entrée</span></button>
-    <button class="qa out" onclick="openAdd('out')"><div class="circ">↑</div><span>Sortie</span></button>
-    <button class="qa pay" onclick="openPaie()"><div class="circ">🧾</div><span>Paie</span></button>
-    <button class="qa rep" onclick="showTab('rapports')"><div class="circ">▤</div><span>Rapports</span></button>
+  <!-- PAIE -->
+  <div class="pane" id="panePaie">
+    <div class="note" style="padding:0 4px 12px">Chaque ligne devient une sortie de caisse, avec l'état de paie à faire signer.</div>
+    <div class="group">
+      <div class="lrow"><div class="lk">Période</div><input id="paiePeriode" placeholder="Septembre 2026"></div>
+      <div class="lrow"><div class="lk">Date</div><input type="date" id="paieDate"></div>
+    </div>
+    <div class="gh">OUVRIERS</div>
+    <div class="group" id="paieRows"></div>
+    <button class="btn plain tap" style="margin-top:10px" onclick="paieAddRow()">Ajouter un ouvrier</button>
+    <div class="card" style="margin-top:16px;padding:14px 16px;display:flex;align-items:baseline;justify-content:space-between">
+      <div style="font-size:15px;color:var(--grey)">Total à payer</div>
+      <div style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.4px"><span id="paieTotal">0</span> <span style="font-size:13px;font-weight:600;color:var(--grey)">DZD</span></div>
+    </div>
+    <button class="btn tap" onclick="savePaie()">Enregistrer et imprimer</button>
   </div>
-</div>
 
-<!-- ===== Main / Registre ===== -->
-<div id="main">
-  <div id="listWrap"></div>
-  <div id="empty" style="display:none;">
-    <div class="big">Aucun mouvement</div>
-    <div class="small">Appuyez sur « + » en bas pour enregistrer<br>votre première entrée ou sortie de caisse.</div>
-  </div>
-</div>
-
-<!-- ===== Bottom nav ===== -->
-<div id="navbar">
-  <button class="navbtn active" data-view="registre" onclick="showTab('registre')">
-    <div class="ic">☰</div><div>Registre</div>
-  </button>
-  <button class="navbtn fab" onclick="openAdd()">
-    <div class="ic">＋</div><div>Ajouter</div>
-  </button>
-  <button class="navbtn" data-view="rapports" onclick="showTab('rapports')">
-    <div class="ic">▤</div><div>Rapports</div>
-  </button>
-</div>
-
-<!-- ===== Sheet: Add entry ===== -->
-<div class="sheet" id="sheetAdd">
-  <div class="sheet-head">
-    <button class="iconbtn" onclick="closeSheet('sheetAdd')">✕</button>
-    <h2>Nouveau mouvement</h2>
-  </div>
-  <div class="sheet-body">
-    <div class="typetoggle">
-      <button id="btnTypeIn" onclick="setAddType('in')">↓ Entrée</button>
-      <button id="btnTypeOut" onclick="setAddType('out')">↑ Sortie</button>
+  <!-- RAPPORTS -->
+  <div class="pane" id="paneRapports">
+    <div class="chips" id="periodRow"></div>
+    <div class="card" style="margin-top:14px;padding:16px 18px">
+      <div style="font-size:13px;color:var(--grey)">Solde net de la période</div>
+      <div style="font-size:32px;font-weight:700;letter-spacing:-.7px;font-variant-numeric:tabular-nums;margin-top:2px"><span id="repNet">0</span> <span style="font-size:14px;font-weight:600;color:var(--grey)">DZD</span></div>
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:11px">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="color:var(--grey)">Entrées</span><span style="font-weight:600;font-variant-numeric:tabular-nums" id="repIn">0</span></div>
+          <div class="bar"><i id="barIn" style="background:var(--green);width:0"></i></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="color:var(--grey)">Sorties</span><span style="font-weight:600;font-variant-numeric:tabular-nums" id="repOut">0</span></div>
+          <div class="bar"><i id="barOut" style="background:var(--red);width:0"></i></div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--grey);margin-top:14px;padding-top:12px;border-top:.5px solid var(--sep2)"><span id="repCount">0</span> mouvements sur la période</div>
     </div>
-
-    <div class="field">
-      <label>Montant (DZD)</label>
-      <input type="number" inputmode="decimal" class="amount" id="fAmount" placeholder="0">
+    <button class="btn tap" onclick="printReport()">Imprimer le rapport</button>
+    <div class="group" style="margin-top:16px">
+      <div class="lrow row" onclick="exportData()"><div style="flex:1;font-size:16px;color:var(--blue)">Exporter la sauvegarde</div></div>
+      <div class="lrow row" onclick="document.getElementById('importFile').click()"><div style="flex:1;font-size:16px;color:var(--blue)">Importer une sauvegarde</div></div>
     </div>
-
-    <div class="field">
-      <label>Description</label>
-      <input type="text" id="fDesc" placeholder="Ex : paie journalière, achat matériel...">
-    </div>
-
-    <div class="field">
-      <label>Date</label>
-      <input type="date" id="fDate">
-    </div>
-
-    <div class="field">
-      <label>Personne concernée <span style="font-weight:400; text-transform:none; color:#9aa5b1;">(optionnel)</span></label>
-      <input type="text" id="fPerson" placeholder="Nom de la personne">
-      <div class="hint">Utile si vous souhaitez imprimer une décharge pour ce mouvement.</div>
-    </div>
-
-    <div class="field">
-      <label>Motif <span style="font-weight:400; text-transform:none; color:#9aa5b1;">(optionnel)</span></label>
-      <input type="text" id="fMotif" placeholder="Ex : avance sur salaire, achat fournitures">
-    </div>
-
-    <div class="field">
-      <label>N° de pièce / référence <span style="font-weight:400; text-transform:none; color:#9aa5b1;">(optionnel)</span></label>
-      <input type="text" id="fRef" placeholder="Ex : facture n°12, bon n°034">
-    </div>
-
-    <button class="primary-btn brass" onclick="saveEntry()">Enregistrer</button>
-  </div>
-</div>
-
-<!-- ===== Sheet: Paie (salaires des ouvriers) ===== -->
-<div class="sheet" id="sheetPaie">
-  <div class="sheet-head">
-    <button class="iconbtn" onclick="closeSheet('sheetPaie')">✕</button>
-    <h2>Paie des ouvriers</h2>
-  </div>
-  <div class="sheet-body">
-    <div class="field">
-      <label>Période</label>
-      <input type="text" id="paiePeriode" placeholder="Ex : Septembre 2026">
-    </div>
-    <div class="field">
-      <label>Date de paiement</label>
-      <input type="date" id="paieDate">
-    </div>
-
-    <div id="paieRows"></div>
-    <button type="button" class="add-row-btn" onclick="paieAddRow()">＋ Ajouter un ouvrier</button>
-
-    <div class="paie-total">
-      <div class="l">Total à payer</div>
-      <div class="v" id="paieTotal">0</div>
-    </div>
-
-    <button class="primary-btn brass" onclick="savePaie()">Enregistrer et imprimer l'état de paie</button>
-    <div class="hint">Chaque ligne sera enregistrée comme une sortie de caisse individuelle (visible et modifiable dans le Registre). Une décharge séparée reste imprimable pour chaque ouvrier si besoin.</div>
-  </div>
-</div>
-
-<!-- ===== Sheet: Entry detail ===== -->
-<div class="sheet" id="sheetDetail">
-  <div class="sheet-head">
-    <button class="iconbtn" onclick="closeSheet('sheetDetail')">✕</button>
-    <h2>Détail du mouvement</h2>
-  </div>
-  <div class="sheet-body" id="detailBody"></div>
-</div>
-
-<!-- ===== Sheet: Rapports ===== -->
-<div class="sheet" id="sheetRapports">
-  <div class="sheet-head">
-    <button class="iconbtn" onclick="closeSheet('sheetRapports')">✕</button>
-    <h2>Rapports</h2>
-  </div>
-  <div class="sheet-body">
-    <div class="period-row" id="periodRow"></div>
-    <div class="kpi-grid">
-      <div class="kpi in"><div class="l">Total entrées</div><div class="v" id="repIn">0</div></div>
-      <div class="kpi out"><div class="l">Total sorties</div><div class="v" id="repOut">0</div></div>
-      <div class="kpi"><div class="l">Solde net période</div><div class="v" id="repNet">0</div></div>
-      <div class="kpi"><div class="l">Nb. mouvements</div><div class="v" id="repCount">0</div></div>
-    </div>
-    <button class="primary-btn brass" onclick="printReport()">🖨 Imprimer le rapport</button>
-    <button class="secondary-btn" onclick="exportData()">⤓ Exporter les données (sauvegarde)</button>
-    <button class="secondary-btn" onclick="document.getElementById('importFile').click()">⤒ Importer une sauvegarde</button>
     <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+    <div class="note">Les données restent sur cet iPhone. Exportez une sauvegarde régulièrement.</div>
   </div>
 </div>
 
-<!-- ===== Hidden printable area ===== -->
+<div id="tabbar">
+  <button class="on" data-tab="registre" onclick="showTab('registre')">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>Registre
+  </button>
+  <button data-tab="paie" onclick="showTab('paie')">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Paie
+  </button>
+  <button data-tab="rapports" onclick="showTab('rapports')">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>Rapports
+  </button>
+</div>
+
+<div id="backdrop" onclick="closeSheets()"></div>
+
+<!-- SHEET: ajout -->
+<div class="sheet" id="sheetAdd">
+  <div class="grab" data-grab="sheetAdd"><i></i></div>
+  <div class="shead">
+    <button onclick="closeSheets()">Annuler</button>
+    <div class="t" id="addTitle">Nouvelle sortie</div>
+    <button class="strong" id="addSave" onclick="saveEntry()" disabled>Ajouter</button>
+  </div>
+  <div class="sbody">
+    <div class="seg">
+      <button id="segIn" onclick="setType('in')">Entrée</button>
+      <button id="segOut" class="on out" onclick="setType('out')">Sortie</button>
+    </div>
+    <div class="card amount">
+      <div class="l">Montant en DZD</div>
+      <div class="n" id="amtDisplay">0</div>
+      <div class="w" id="amtWords">Tapez le montant sur le clavier</div>
+    </div>
+    <div class="group" style="margin-top:14px">
+      <div class="lrow"><div class="lk">Description</div><input id="fDesc" placeholder="Achat matériel…"></div>
+      <div class="lrow"><div class="lk">Date</div><input type="date" id="fDate"></div>
+      <div class="lrow"><div class="lk">Personne</div><input id="fPerson" placeholder="Nom"></div>
+      <div class="lrow"><div class="lk">Motif</div><input id="fMotif" placeholder="Avance sur salaire"></div>
+      <div class="lrow"><div class="lk">Référence</div><input id="fRef" placeholder="Bon n°"></div>
+    </div>
+    <div class="note">Le nom de la personne est nécessaire pour imprimer une décharge signable.</div>
+  </div>
+  <div id="pad"></div>
+</div>
+
+<!-- SHEET: détail -->
+<div class="sheet" id="sheetDetail">
+  <div class="grab" data-grab="sheetDetail"><i></i></div>
+  <div class="shead">
+    <div style="width:60px"></div><div class="t">Détail</div>
+    <button class="strong" style="width:60px;text-align:right" onclick="closeSheets()">OK</button>
+  </div>
+  <div class="sbody" id="detailBody"></div>
+</div>
+
+<!-- ACTION SHEET -->
+<div id="actionsheet">
+  <div class="grp">
+    <div class="msg">Ce mouvement sera définitivement supprimé du registre.</div>
+    <button class="destructive row" onclick="confirmDelete()">Supprimer</button>
+  </div>
+  <button class="cancel row" onclick="closeActionSheet()">Annuler</button>
+</div>
+
+<div id="toast"></div>
 <div id="printArea"></div>
 
 <script>
-/* ---------- Data layer ---------- */
 const STORAGE_KEY = 'ipcm_caisse_espece_v1';
 const COMPANY = {
-  rs: "I.P.C.M BOUTEMA",
-  adresse: "Rue des Frères Djennadi, 3ème étage, Lot 35 Div 96, Blida",
-  rc: "09/00-4108712A23",
-  nif: "16922040023019500900",
-  nis: "196922040023050",
-  tel: "0550700196",
-  email: "direction.ipcmboutema@gmail.com"
+  rs:"I.P.C.M BOUTEMA",
+  adresse:"Rue des Frères Djennadi, 3ème étage, Lot 35 Div 96, Blida",
+  rc:"09/00-4108712A23", nif:"16922040023019500900", nis:"196922040023050",
+  tel:"0550700196", email:"direction.ipcmboutema@gmail.com"
 };
-
 let entries = loadEntries();
-let addType = 'in';
-let currentPeriod = 'total'; // 'total' or 'YYYY-MM'
-let currentDetailId = null;
+let addType = 'out', amountStr = '', currentPeriod = 'total', currentDetailId = null, pendingDeleteId = null, activeTab = 'registre';
 
-function loadEntries(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  }catch(e){ return []; }
-}
-function persist(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-}
-function fmt(n){
-  return Math.round(n).toLocaleString('fr-FR');
-}
-function uid(){
-  return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-}
+function loadEntries(){ try{ const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : []; }catch(e){ return []; } }
+function persist(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }
+function fmt(n){ return Math.round(n).toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' '); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function esc(s){ const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+function buzz(){ try{ navigator.vibrate && navigator.vibrate(8); }catch(e){} }
+function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('on'), 2200); }
 
-/* ---------- Rendering: Registre ---------- */
-function computeBalance(){
-  let bal = 0;
-  entries.forEach(e => bal += (e.type === 'in' ? e.amount : -e.amount));
-  return bal;
+/* ---------- Registre ---------- */
+function computeBalance(){ return entries.reduce((s,e)=> s + (e.type==='in'? e.amount : -e.amount), 0); }
+function renderTop(){
+  document.getElementById('balance').textContent = fmt(computeBalance());
+  document.getElementById('sumIn').textContent = fmt(entries.filter(e=>e.type==='in').reduce((s,e)=>s+e.amount,0));
+  document.getElementById('sumOut').textContent = fmt(entries.filter(e=>e.type==='out').reduce((s,e)=>s+e.amount,0));
 }
-function renderTopbar(){
-  document.getElementById('balanceDisplay').innerHTML = fmt(computeBalance()) + '<span class="cur">DZD</span>';
-  const sumIn = entries.filter(e=>e.type==='in').reduce((s,e)=>s+e.amount,0);
-  const sumOut = entries.filter(e=>e.type==='out').reduce((s,e)=>s+e.amount,0);
-  document.getElementById('sumIn').textContent = fmt(sumIn);
-  document.getElementById('sumOut').textContent = fmt(sumOut);
+function dayLabel(dateStr){
+  const d = new Date(dateStr+'T00:00:00'), today = new Date(); today.setHours(0,0,0,0);
+  const y = new Date(today); y.setDate(y.getDate()-1);
+  if(d.getTime()===today.getTime()) return "Aujourd'hui";
+  if(d.getTime()===y.getTime()) return "Hier";
+  return d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 }
-
 function renderList(){
-  const wrap = document.getElementById('listWrap');
-  const empty = document.getElementById('empty');
-  if(entries.length === 0){
-    wrap.innerHTML = '';
-    empty.style.display = 'block';
-    return;
-  }
-  empty.style.display = 'none';
-
-  const sorted = [...entries].sort((a,b) => (b.date+b.id).localeCompare(a.date+a.id));
+  const wrap = document.getElementById('listWrap'), empty = document.getElementById('empty');
+  if(!entries.length){ wrap.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  const sorted = [...entries].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id));
   const groups = {};
-  sorted.forEach(e => { (groups[e.date] = groups[e.date] || []).push(e); });
-
+  sorted.forEach(e=>{ (groups[e.date] = groups[e.date]||[]).push(e); });
   let html = '';
-  Object.keys(groups).sort().reverse().forEach(date => {
-    html += `<div class="day-group"><div class="day-label">${formatDateLabel(date)}</div>`;
-    groups[date].forEach(e => {
-      html += `<div class="entry ${e.type}" onclick="openDetail('${e.id}')">
-        <div class="mark">${e.type === 'in' ? '↓' : '↑'}</div>
-        <div class="info">
-          <div class="desc">${escapeHtml(e.desc || (e.type==='in' ? 'Entrée caisse' : 'Sortie caisse'))}</div>
-          <div class="meta">${e.person ? escapeHtml(e.person) : (e.motif ? escapeHtml(e.motif) : '')}</div>
-        </div>
-        <div class="amt">${e.type==='in' ? '+' : '−'}${fmt(e.amount)}</div>
-      </div>`;
+  Object.keys(groups).sort().reverse().forEach(date=>{
+    html += `<div class="gh">${dayLabel(date)}</div><div class="group">`;
+    groups[date].forEach(e=>{
+      const meta = [e.person, e.motif].filter(Boolean).map(esc).join(' · ');
+      html += `<div class="swipe">
+        <button class="del" onclick="deleteEntry('${e.id}')">Supprimer</button>
+        <div class="item" data-id="${e.id}" onclick="openDetail('${e.id}')">
+          <div class="mark ${e.type}">${e.type==='in'
+            ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2aa74c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>'
+            : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e02c22" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>'}</div>
+          <div class="txt">
+            <div class="d">${esc(e.desc || (e.type==='in'?'Entrée caisse':'Sortie caisse'))}</div>
+            <div class="m">${meta}</div>
+          </div>
+          <div class="a ${e.type}">${e.type==='in'?'+':'−'}${fmt(e.amount)}</div>
+          <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c7c7cc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </div></div>`;
     });
     html += `</div>`;
   });
   wrap.innerHTML = html;
+  wireSwipe();
 }
 
-function formatDateLabel(dateStr){
-  const d = new Date(dateStr + 'T00:00:00');
-  const today = new Date(); today.setHours(0,0,0,0);
-  const yest = new Date(today); yest.setDate(yest.getDate()-1);
-  if(d.getTime() === today.getTime()) return "Aujourd'hui";
-  if(d.getTime() === yest.getTime()) return "Hier";
-  return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+/* ---------- Swipe to delete ---------- */
+let openSwipe = null;
+function wireSwipe(){
+  document.querySelectorAll('#listWrap .item').forEach(el=>{
+    let x0 = 0, dx = 0, moved = false, active = false;
+    el.addEventListener('pointerdown', ev=>{ x0 = ev.clientX; dx = 0; moved = false; active = true; el.style.transition='none'; });
+    el.addEventListener('pointermove', ev=>{
+      if(!active) return;
+      dx = ev.clientX - x0;
+      if(Math.abs(dx) > 6) moved = true;
+      const base = (openSwipe === el) ? -84 : 0;
+      el.style.transform = 'translateX(' + Math.max(-110, Math.min(0, base + dx)) + 'px)';
+    });
+    const end = ()=>{
+      if(!active) return;
+      active = false;
+      el.style.transition = '';
+      const base = (openSwipe === el) ? -84 : 0;
+      const final = base + dx;
+      if(final < -42){ if(openSwipe && openSwipe !== el) closeSwipe(); openSwipe = el; el.style.transform='translateX(-84px)'; buzz(); }
+      else { el.style.transform='translateX(0)'; if(openSwipe === el) openSwipe = null; }
+      el._moved = moved;
+    };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+    el.addEventListener('click', ev=>{ if(el._moved || el.style.transform.indexOf('-84') > -1){ ev.stopPropagation(); ev.preventDefault(); el._moved=false; } }, true);
+  });
 }
-function escapeHtml(s){
-  const div = document.createElement('div');
-  div.textContent = s;
-  return div.innerHTML;
+function closeSwipe(){ if(openSwipe){ openSwipe.style.transform='translateX(0)'; openSwipe = null; } }
+function deleteEntry(id){
+  entries = entries.filter(e=>e.id!==id); persist(); openSwipe=null;
+  renderTop(); renderList(); renderReports(); toast('Mouvement supprimé');
 }
 
-/* ---------- Tabs / sheets ---------- */
-function showTab(view){
-  document.querySelectorAll('.navbtn').forEach(b=>b.classList.remove('active'));
-  document.querySelector(`.navbtn[data-view="${view}"]`)?.classList.add('active');
-  if(view === 'rapports'){ openSheet('sheetRapports'); renderReports(); }
+/* ---------- Tabs / titles ---------- */
+const TITLES = { registre:['Caisse', ()=> new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})],
+                 paie:['Paie', ()=>'Salaires des ouvriers'],
+                 rapports:['Rapports', ()=>'Entrées, sorties et sauvegarde'] };
+function showTab(tab){
+  buzz(); activeTab = tab; closeSwipe();
+  document.querySelectorAll('#tabbar button').forEach(b=>b.classList.toggle('on', b.dataset.tab===tab));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pane' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('on');
+  const [t, sub] = TITLES[tab];
+  document.getElementById('bigTitle').textContent = t;
+  document.getElementById('navTitle').textContent = t;
+  document.getElementById('bigSub').textContent = sub();
+  document.getElementById('scroll').scrollTop = 0;
+  if(tab === 'rapports') renderReports();
+  if(tab === 'paie' && !document.querySelector('#paieRows .paierow')) initPaie();
 }
-function openSheet(id){ document.getElementById(id).classList.add('open'); }
-function closeSheet(id){ document.getElementById(id).classList.remove('open'); }
+document.getElementById('scroll').addEventListener('scroll', e=>{
+  document.getElementById('navbar').classList.toggle('on', e.target.scrollTop > 44);
+});
 
+/* ---------- Sheets ---------- */
+function openSheet(id){
+  document.getElementById('backdrop').classList.add('on');
+  const s = document.getElementById(id);
+  s.style.transform = ''; s.classList.add('on');
+}
+function closeSheets(){
+  document.getElementById('backdrop').classList.remove('on');
+  document.querySelectorAll('.sheet').forEach(s=>{ s.style.transform=''; s.classList.remove('on'); });
+}
+document.querySelectorAll('.grab').forEach(g=>{
+  const sheet = document.getElementById(g.dataset.grab);
+  let y0 = 0, dy = 0, active = false;
+  g.addEventListener('pointerdown', ev=>{ y0 = ev.clientY; dy = 0; active = true; g.setPointerCapture(ev.pointerId); sheet.style.transition='none'; });
+  g.addEventListener('pointermove', ev=>{ if(!active) return; dy = Math.max(0, ev.clientY - y0); sheet.style.transform = 'translateY(' + dy + 'px)'; });
+  const end = ()=>{ if(!active) return; active = false; sheet.style.transition='';
+    if(dy > 110){ buzz(); closeSheets(); } else sheet.style.transform=''; };
+  g.addEventListener('pointerup', end); g.addEventListener('pointercancel', end);
+});
+
+/* ---------- Ajout ---------- */
 function openAdd(type){
-  document.getElementById('fAmount').value = '';
-  document.getElementById('fDesc').value = '';
-  document.getElementById('fPerson').value = '';
-  document.getElementById('fMotif').value = '';
-  document.getElementById('fRef').value = '';
+  buzz(); closeSwipe();
+  amountStr = '';
+  ['fDesc','fPerson','fMotif','fRef'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
-  setAddType(type || 'in');
+  setType(type || 'out'); renderAmount();
   openSheet('sheetAdd');
 }
-function setAddType(t){
-  addType = t;
-  document.getElementById('btnTypeIn').classList.toggle('sel-in', t==='in');
-  document.getElementById('btnTypeOut').classList.toggle('sel-out', t==='out');
+function setType(t){
+  buzz(); addType = t;
+  document.getElementById('segIn').className = t==='in' ? 'on in' : '';
+  document.getElementById('segOut').className = t==='out' ? 'on out' : '';
+  document.getElementById('addTitle').textContent = t==='in' ? 'Nouvelle entrée' : 'Nouvelle sortie';
+  renderAmount();
 }
+function renderAmount(){
+  const n = parseFloat(amountStr) || 0;
+  const el = document.getElementById('amtDisplay');
+  el.textContent = n ? fmt(n) : '0';
+  el.className = 'n' + (n ? ' ' + addType : '');
+  document.getElementById('amtWords').textContent = n ? (numberToFrenchWords(n) + ' dinars algériens') : 'Tapez le montant sur le clavier';
+  document.getElementById('addSave').disabled = !n;
+}
+(function buildPad(){
+  const pad = document.getElementById('pad');
+  ['1','2','3','4','5','6','7','8','9','000','0','⌫'].forEach(k=>{
+    const b = document.createElement('button');
+    b.textContent = k; if(k==='000'||k==='⌫') b.className='alt';
+    b.onclick = ()=>{ buzz();
+      if(k==='⌫') amountStr = amountStr.slice(0,-1);
+      else if(k==='000') amountStr = amountStr ? (amountStr+'000').slice(0,12) : '';
+      else amountStr = (amountStr + k).replace(/^0+(?=\d)/,'').slice(0,12);
+      renderAmount();
+    };
+    pad.appendChild(b);
+  });
+})();
 function saveEntry(){
-  const amount = parseFloat(document.getElementById('fAmount').value);
-  if(!amount || amount <= 0){ alert('Merci de saisir un montant valide.'); return; }
-  const date = document.getElementById('fDate').value || new Date().toISOString().slice(0,10);
-  const entry = {
-    id: uid(),
-    type: addType,
-    amount: amount,
-    desc: document.getElementById('fDesc').value.trim(),
-    person: document.getElementById('fPerson').value.trim(),
-    motif: document.getElementById('fMotif').value.trim(),
-    ref: document.getElementById('fRef').value.trim(),
-    date: date,
-    createdAt: new Date().toISOString()
-  };
-  entries.push(entry);
-  persist();
-  closeSheet('sheetAdd');
-  renderTopbar();
-  renderList();
+  const amount = parseFloat(amountStr) || 0;
+  if(!amount){ toast('Saisissez un montant'); return; }
+  buzz();
+  entries.push({ id:uid(), type:addType, amount:amount,
+    desc:document.getElementById('fDesc').value.trim() || (addType==='in'?'Entrée caisse':'Sortie caisse'),
+    person:document.getElementById('fPerson').value.trim(),
+    motif:document.getElementById('fMotif').value.trim(),
+    ref:document.getElementById('fRef').value.trim(),
+    date:document.getElementById('fDate').value || new Date().toISOString().slice(0,10),
+    createdAt:new Date().toISOString() });
+  persist(); closeSheets(); renderTop(); renderList(); renderReports();
+  setTimeout(()=>toast('Mouvement enregistré'), 260);
 }
 
-/* ---------- Paie (salaires des ouvriers) ---------- */
-function currentMonthLabelFR(){
-  const label = new Date().toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
-  return label.charAt(0).toUpperCase() + label.slice(1);
+/* ---------- Détail ---------- */
+function openDetail(id){
+  const e = entries.find(x=>x.id===id); if(!e) return;
+  buzz(); currentDetailId = id;
+  const rows = [
+    ['Date', dayLabel(e.date)],
+    ['Description', e.desc || '—'],
+    ['Personne', e.person || '—'],
+    ['Motif', e.motif || '—'],
+    ['Référence', e.ref || '—']
+  ].map(([k,v])=>`<div class="lrow"><div style="color:var(--grey);flex:none">${k}</div><div style="flex:1;text-align:right;font-size:16px">${esc(v)}</div></div>`).join('');
+  document.getElementById('detailBody').innerHTML = `
+    <div class="dhead">
+      <div class="mark ${e.type}" style="background:${e.type==='in'?'rgba(52,199,89,.14)':'rgba(255,59,48,.13)'}">
+        ${e.type==='in'
+          ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2aa74c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>'
+          : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e02c22" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>'}
+      </div>
+      <div class="n" style="color:${e.type==='in'?'var(--green-d)':'var(--red-d)'}">${e.type==='in'?'+':'−'}${fmt(e.amount)}</div>
+      <div class="k">${e.type==='in'?'Entrée en caisse':'Sortie de caisse'}</div>
+      <div class="w">${numberToFrenchWords(e.amount)} dinars algériens</div>
+    </div>
+    <div class="group" style="margin-top:20px">${rows}</div>
+    <button class="btn tap" onclick="printDecharge('${e.id}')">Imprimer la décharge</button>
+    <button class="btn danger tap" onclick="askDelete('${e.id}')">Supprimer le mouvement</button>`;
+  openSheet('sheetDetail');
 }
-function openPaie(){
+function askDelete(id){ buzz(); pendingDeleteId = id; document.getElementById('actionsheet').classList.add('on'); }
+function closeActionSheet(){ document.getElementById('actionsheet').classList.remove('on'); }
+function confirmDelete(){
+  closeActionSheet();
+  const id = pendingDeleteId; pendingDeleteId = null;
+  setTimeout(()=>{ closeSheets(); entries = entries.filter(e=>e.id!==id); persist(); renderTop(); renderList(); renderReports(); setTimeout(()=>toast('Mouvement supprimé'), 260); }, 200);
+}
+
+/* ---------- Paie ---------- */
+function initPaie(){
   document.getElementById('paiePeriode').value = currentMonthLabelFR();
   document.getElementById('paieDate').value = new Date().toISOString().slice(0,10);
   document.getElementById('paieRows').innerHTML = '';
   for(let i=0;i<3;i++) paieAddRow();
   updatePaieTotal();
-  openSheet('sheetPaie');
+}
+function currentMonthLabelFR(){
+  const l = new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  return l.charAt(0).toUpperCase() + l.slice(1);
 }
 function paieAddRow(){
-  const wrap = document.getElementById('paieRows');
+  buzz();
   const row = document.createElement('div');
-  row.className = 'paie-row';
-  row.innerHTML = `
-    <input type="text" class="pName" placeholder="Nom de l'ouvrier">
-    <input type="number" inputmode="decimal" class="pAmount" placeholder="Montant DZD">
-    <button type="button" class="pRemove" onclick="this.parentElement.remove(); updatePaieTotal();">✕</button>
-  `;
-  wrap.appendChild(row);
-  row.querySelector('.pAmount').addEventListener('input', updatePaieTotal);
+  row.className = 'paierow';
+  row.innerHTML = `<button class="rm tap" type="button"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+    <input class="nm" placeholder="Nom de l'ouvrier">
+    <input class="am" inputmode="decimal" placeholder="0">`;
+  row.querySelector('.rm').onclick = ()=>{ buzz(); row.remove(); updatePaieTotal(); };
+  row.querySelector('.am').addEventListener('input', updatePaieTotal);
+  document.getElementById('paieRows').appendChild(row);
 }
 function updatePaieTotal(){
-  let total = 0;
-  document.querySelectorAll('#paieRows .pAmount').forEach(inp => { total += parseFloat(inp.value) || 0; });
-  document.getElementById('paieTotal').textContent = fmt(total);
+  let t = 0;
+  document.querySelectorAll('#paieRows .am').forEach(i=>{ t += parseFloat(i.value)||0; });
+  document.getElementById('paieTotal').textContent = fmt(t);
 }
 function savePaie(){
   const periode = document.getElementById('paiePeriode').value.trim() || currentMonthLabelFR();
   const dateVal = document.getElementById('paieDate').value || new Date().toISOString().slice(0,10);
   const rows = [];
-  document.querySelectorAll('#paieRows .paie-row').forEach(row => {
-    const name = row.querySelector('.pName').value.trim();
-    const amount = parseFloat(row.querySelector('.pAmount').value);
+  document.querySelectorAll('#paieRows .paierow').forEach(r=>{
+    const name = r.querySelector('.nm').value.trim(), amount = parseFloat(r.querySelector('.am').value);
     if(name && amount > 0) rows.push({name, amount});
   });
-  if(rows.length === 0){ alert('Ajoutez au moins un ouvrier avec un montant valide.'); return; }
-  const total = rows.reduce((s,r) => s + r.amount, 0);
+  if(!rows.length){ toast('Ajoutez au moins un ouvrier'); return; }
+  const total = rows.reduce((s,r)=>s+r.amount,0);
   if(!confirm(`Enregistrer ${rows.length} paiement(s) pour un total de ${fmt(total)} DZD ?`)) return;
-
-  rows.forEach(r => {
-    entries.push({
-      id: uid(),
-      type: 'out',
-      amount: r.amount,
-      desc: 'Salaire — ' + periode,
-      person: r.name,
-      motif: 'Salaire',
-      ref: '',
-      date: dateVal,
-      createdAt: new Date().toISOString()
-    });
-  });
-  persist();
-  renderTopbar();
-  renderList();
-  closeSheet('sheetPaie');
+  rows.forEach(r=> entries.push({ id:uid(), type:'out', amount:r.amount, desc:'Salaire — '+periode, person:r.name, motif:'Salaire', ref:'', date:dateVal, createdAt:new Date().toISOString() }));
+  persist(); renderTop(); renderList(); renderReports(); showTab('registre');
+  toast(rows.length + ' paiement(s) enregistré(s)');
   printPaie(rows, periode, dateVal, total);
 }
 function printPaie(rows, periode, dateVal, total){
   const dateStr = new Date(dateVal+'T00:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  const trs = rows.map((r,i) => `<tr>
-      <td>${i+1}</td>
-      <td>${escapeHtml(r.name)}</td>
-      <td class="num">${fmt(r.amount)}</td>
-      <td class="sig-cell"></td>
-    </tr>`).join('');
-  const html = `
-    <div class="doc-head">
-      <div class="rs">${COMPANY.rs}</div>
-      <div class="meta">
-        ${COMPANY.adresse}<br>
-        RC ${COMPANY.rc} — NIF ${COMPANY.nif} — NIS ${COMPANY.nis}<br>
-        Tél : ${COMPANY.tel} — ${COMPANY.email}
-      </div>
-    </div>
+  const trs = rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td class="num">${fmt(r.amount)}</td><td class="sig-cell"></td></tr>`).join('');
+  document.getElementById('printArea').innerHTML = `
+    <div class="doc-head"><div class="rs">${COMPANY.rs}</div>
+      <div class="meta">${COMPANY.adresse}<br>RC ${COMPANY.rc} — NIF ${COMPANY.nif} — NIS ${COMPANY.nis}<br>Tél : ${COMPANY.tel} — ${COMPANY.email}</div></div>
     <div class="doc-title">ÉTAT DE PAIE</div>
-    <div class="doc-line">Période : <b>${escapeHtml(periode)}</b> — Payé le ${dateStr}</div>
-    <table class="rep">
-      <thead><tr><th>N°</th><th>Nom de l'ouvrier</th><th class="num">Montant (DZD)</th><th>Signature</th></tr></thead>
+    <div class="doc-line">Période : <b>${esc(periode)}</b> — Payé le ${dateStr}</div>
+    <table class="rep"><thead><tr><th>N°</th><th>Nom de l'ouvrier</th><th class="num">Montant (DZD)</th><th>Signature</th></tr></thead>
       <tbody>${trs}</tbody>
-      <tfoot><tr class="rep-foot"><td colspan="2">Total</td><td class="num">${fmt(total)}</td><td></td></tr></tfoot>
-    </table>
-    <div class="sign-row" style="margin-top:50px;">
+      <tfoot><tr class="rep-foot"><td colspan="2">Total</td><td class="num">${fmt(total)}</td><td></td></tr></tfoot></table>
+    <div class="sign-row" style="margin-top:50px">
       <div class="sign-col"><div class="l">Établi par</div></div>
       <div class="sign-col"><div class="l">Pour la société — Youcef Boutema</div></div>
-    </div>
-  `;
-  document.getElementById('printArea').innerHTML = html;
+    </div>`;
   window.print();
 }
 
-/* ---------- Detail / décharge ---------- */
-function openDetail(id){
-  currentDetailId = id;
-  const e = entries.find(x => x.id === id);
-  if(!e) return;
-  const html = `
-    <div class="detail-amt ${e.type}">
-      <div class="n">${e.type==='in'?'+':'−'}${fmt(e.amount)} <span style="font-size:16px;">DZD</span></div>
-      <div class="t">${e.type==='in' ? 'Entrée en caisse' : 'Sortie de caisse'}</div>
-    </div>
-    <div class="detail-row"><div class="k">Date</div><div class="v">${new Date(e.date+'T00:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</div></div>
-    <div class="detail-row"><div class="k">Description</div><div class="v">${escapeHtml(e.desc || '—')}</div></div>
-    <div class="detail-row"><div class="k">Personne concernée</div><div class="v">${escapeHtml(e.person || '—')}</div></div>
-    <div class="detail-row"><div class="k">Motif</div><div class="v">${escapeHtml(e.motif || '—')}</div></div>
-    <div class="detail-row"><div class="k">N° pièce / référence</div><div class="v">${escapeHtml(e.ref || '—')}</div></div>
-    <button class="primary-btn brass" onclick="printDecharge('${e.id}')">🖨 Imprimer une décharge</button>
-    <button class="danger-link" onclick="deleteEntry('${e.id}')">Supprimer ce mouvement</button>
-  `;
-  document.getElementById('detailBody').innerHTML = html;
-  openSheet('sheetDetail');
-}
-function deleteEntry(id){
-  if(!confirm('Supprimer définitivement ce mouvement ?')) return;
-  entries = entries.filter(e => e.id !== id);
-  persist();
-  closeSheet('sheetDetail');
-  renderTopbar();
-  renderList();
-}
-
-/* ---------- Number to French words (DZD) ---------- */
+/* ---------- Nombres en lettres ---------- */
 function numberToFrenchWords(n){
   n = Math.round(n);
   if(n === 0) return 'zéro';
-  const units = ['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix',
-    'onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+  const units = ['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
   const tens = ['','','vingt','trente','quarante','cinquante','soixante','soixante-dix','quatre-vingt','quatre-vingt-dix'];
-
   function under1000(num){
-    let s = '';
-    const h = Math.floor(num/100), r = num%100;
+    let s = ''; const h = Math.floor(num/100), r = num%100;
     if(h > 0){ s += (h>1? units[h]+' cent' : 'cent') + (h>1 && r===0 ? 's' : '') + (r>0?' ':''); }
     if(r > 0){
-      if(r < 20){ s += units[r]; }
-      else {
-        const t = Math.floor(r/10), u = r%10;
-        if(t === 7 || t === 9){
-          s += tens[t-1] + '-' + units[10+u];
-        } else {
-          s += tens[t] + (u>0 ? (u===1 && t!==8 ? ' et un' : '-'+units[u]) : (t===8?'s':''));
-        }
+      if(r < 20) s += units[r];
+      else { const t = Math.floor(r/10), u = r%10;
+        if(t === 7 || t === 9) s += tens[t-1] + '-' + units[10+u];
+        else s += tens[t] + (u>0 ? (u===1 && t!==8 ? ' et un' : '-'+units[u]) : (t===8?'s':''));
       }
     }
     return s;
   }
-
-  const billions = Math.floor(n / 1e9);
-  const millions = Math.floor((n % 1e9) / 1e6);
-  const thousands = Math.floor((n % 1e6) / 1e3);
-  const rest = n % 1000;
-
-  let parts = [];
-  if(billions) parts.push(under1000(billions) + ' milliard' + (billions>1?'s':''));
+  const milliards = Math.floor(n/1e9), millions = Math.floor((n%1e9)/1e6), milliers = Math.floor((n%1e6)/1e3), reste = n%1000;
+  const parts = [];
+  if(milliards) parts.push(under1000(milliards) + ' milliard' + (milliards>1?'s':''));
   if(millions) parts.push(under1000(millions) + ' million' + (millions>1?'s':''));
-  if(thousands) parts.push((thousands===1?'mille':under1000(thousands)+' mille'));
-  if(rest) parts.push(under1000(rest));
-
+  if(milliers) parts.push(milliers===1 ? 'mille' : under1000(milliers)+' mille');
+  if(reste) parts.push(under1000(reste));
   return parts.join(' ').replace(/\s+/g,' ').trim();
 }
 
-/* ---------- Print: décharge ---------- */
+/* ---------- Décharge ---------- */
 function printDecharge(id){
-  const e = entries.find(x => x.id === id);
-  if(!e) return;
+  const e = entries.find(x=>x.id===id); if(!e) return;
   const dateStr = new Date(e.date+'T00:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  const words = numberToFrenchWords(e.amount);
   const verb = e.type === 'out' ? 'reçu de la société' : 'remis à la société';
   const docNum = 'D-' + e.date.slice(0,4) + '-' + String(entries.findIndex(x=>x.id===id)+1).padStart(4,'0');
-  const remisPar = e.type === 'out' ? (escapeHtml(COMPANY.rs)) : (escapeHtml(e.person) || '&nbsp;');
-  const recuPar = e.type === 'out' ? (escapeHtml(e.person) || '&nbsp;') : (escapeHtml(COMPANY.rs));
-  const html = `
-    <div class="doc-head">
-      <div class="rs">${COMPANY.rs}</div>
-      <div class="meta">
-        ${COMPANY.adresse}<br>
-        RC ${COMPANY.rc} — NIF ${COMPANY.nif} — NIS ${COMPANY.nis}<br>
-        Tél : ${COMPANY.tel} — ${COMPANY.email}
-      </div>
-    </div>
+  const remisPar = e.type === 'out' ? esc(COMPANY.rs) : (esc(e.person) || '&nbsp;');
+  const recuPar = e.type === 'out' ? (esc(e.person) || '&nbsp;') : esc(COMPANY.rs);
+  document.getElementById('printArea').innerHTML = `
+    <div class="doc-head"><div class="rs">${COMPANY.rs}</div>
+      <div class="meta">${COMPANY.adresse}<br>RC ${COMPANY.rc} — NIF ${COMPANY.nif} — NIS ${COMPANY.nis}<br>Tél : ${COMPANY.tel} — ${COMPANY.email}</div></div>
     <div class="doc-title">DÉCHARGE</div>
-    <div class="doc-line">N° ${docNum} — Fait à Blida, le ${dateStr}${e.ref ? ' — Réf. pièce : ' + escapeHtml(e.ref) : ''}</div>
-    <div class="doc-line">Je soussigné(e) <span class="doc-blank">${escapeHtml(e.person) || '&nbsp;'}</span></div>
+    <div class="doc-line">N° ${docNum} — Fait à Blida, le ${dateStr}${e.ref ? ' — Réf. pièce : ' + esc(e.ref) : ''}</div>
+    <div class="doc-line">Je soussigné(e) <span class="doc-blank">${esc(e.person) || '&nbsp;'}</span></div>
     <div class="doc-line">reconnais avoir ${verb} <b>${COMPANY.rs}</b> la somme de :</div>
-    <div class="doc-amount-box">
-      <div class="n">${fmt(e.amount)} DZD</div>
-      <div>(${words} dinars algériens)</div>
-    </div>
-    <div class="doc-line">Au titre de : <span class="doc-blank" style="min-width:300px;">${escapeHtml(e.motif) || (escapeHtml(e.desc) || '&nbsp;')}</span></div>
+    <div class="doc-amount-box"><div class="n">${fmt(e.amount)} DZD</div><div>(${numberToFrenchWords(e.amount)} dinars algériens)</div></div>
+    <div class="doc-line">Au titre de : <span class="doc-blank" style="min-width:300px">${esc(e.motif) || esc(e.desc) || '&nbsp;'}</span></div>
     <div class="sign-row">
       <div class="sign-col"><div class="l">Remis par<br>${remisPar}</div></div>
       <div class="sign-col"><div class="l">Reçu par<br>${recuPar}</div></div>
-    </div>
-  `;
-  document.getElementById('printArea').innerHTML = html;
+    </div>`;
   window.print();
 }
 
-/* ---------- Reports ---------- */
-function monthKey(dateStr){ return dateStr.slice(0,7); }
+/* ---------- Rapports ---------- */
+function monthKey(d){ return d.slice(0,7); }
 function monthLabel(key){
   const [y,m] = key.split('-');
-  const d = new Date(parseInt(y), parseInt(m)-1, 1);
-  return d.toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
+  const l = new Date(+y, +m-1, 1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  return l.charAt(0).toUpperCase() + l.slice(1);
 }
-function availableMonths(){
-  const set = new Set(entries.map(e => monthKey(e.date)));
-  return [...set].sort().reverse();
-}
+function filteredForPeriod(){ return currentPeriod === 'total' ? [...entries] : entries.filter(e=>monthKey(e.date)===currentPeriod); }
 function renderReports(){
-  const months = availableMonths();
-  const row = document.getElementById('periodRow');
-  let chips = `<button class="period-chip ${currentPeriod==='total'?'active':''}" onclick="selectPeriod('total')">Total</button>`;
-  months.forEach(m => {
-    chips += `<button class="period-chip ${currentPeriod===m?'active':''}" onclick="selectPeriod('${m}')">${monthLabel(m)}</button>`;
-  });
-  row.innerHTML = chips;
-  updateReportKpis();
-}
-function selectPeriod(p){ currentPeriod = p; renderReports(); }
-function filteredForPeriod(){
-  if(currentPeriod === 'total') return [...entries];
-  return entries.filter(e => monthKey(e.date) === currentPeriod);
-}
-function updateReportKpis(){
+  const months = [...new Set(entries.map(e=>monthKey(e.date)))].sort().reverse();
+  document.getElementById('periodRow').innerHTML =
+    `<button class="chip ${currentPeriod==='total'?'on':''}" onclick="selectPeriod('total')">Tout</button>` +
+    months.map(m=>`<button class="chip ${currentPeriod===m?'on':''}" onclick="selectPeriod('${m}')">${monthLabel(m)}</button>`).join('');
   const list = filteredForPeriod();
-  const sumIn = list.filter(e=>e.type==='in').reduce((s,e)=>s+e.amount,0);
-  const sumOut = list.filter(e=>e.type==='out').reduce((s,e)=>s+e.amount,0);
-  document.getElementById('repIn').textContent = fmt(sumIn);
-  document.getElementById('repOut').textContent = fmt(sumOut);
-  document.getElementById('repNet').textContent = fmt(sumIn - sumOut);
+  const sIn = list.filter(e=>e.type==='in').reduce((s,e)=>s+e.amount,0);
+  const sOut = list.filter(e=>e.type==='out').reduce((s,e)=>s+e.amount,0);
+  const peak = Math.max(sIn, sOut, 1);
+  document.getElementById('repIn').textContent = fmt(sIn);
+  document.getElementById('repOut').textContent = fmt(sOut);
+  document.getElementById('repNet').textContent = fmt(sIn - sOut);
   document.getElementById('repCount').textContent = list.length;
+  document.getElementById('barIn').style.width = Math.round(sIn/peak*100) + '%';
+  document.getElementById('barOut').style.width = Math.round(sOut/peak*100) + '%';
 }
-
+function selectPeriod(p){ buzz(); currentPeriod = p; renderReports(); }
 function printReport(){
-  const list = filteredForPeriod().sort((a,b) => (a.date+a.id).localeCompare(b.date+b.id));
-  const periodTitle = currentPeriod === 'total' ? 'Rapport global' : 'Rapport mensuel — ' + monthLabel(currentPeriod);
-
+  const list = filteredForPeriod().sort((a,b)=>(a.date+a.id).localeCompare(b.date+b.id));
+  const title = currentPeriod === 'total' ? 'Rapport global' : 'Rapport mensuel — ' + monthLabel(currentPeriod);
   let running = 0;
-  // if period is a month, base balance = balance of all entries strictly before that month
-  if(currentPeriod !== 'total'){
-    entries.forEach(e => { if(e.date < currentPeriod + '-01') running += (e.type==='in'?e.amount:-e.amount); });
-  }
-  let rows = '';
-  list.forEach(e => {
-    running += (e.type === 'in' ? e.amount : -e.amount);
-    rows += `<tr>
-      <td>${new Date(e.date+'T00:00:00').toLocaleDateString('fr-FR')}</td>
-      <td>${escapeHtml(e.desc || (e.type==='in'?'Entrée':'Sortie'))}</td>
-      <td>${escapeHtml(e.person||'—')}</td>
-      <td>${e.type==='in'?'Entrée':'Sortie'}</td>
-      <td class="num">${e.type==='in'?'+':'−'}${fmt(e.amount)}</td>
-      <td class="num">${fmt(running)}</td>
-    </tr>`;
-  });
-  const sumIn = list.filter(e=>e.type==='in').reduce((s,e)=>s+e.amount,0);
-  const sumOut = list.filter(e=>e.type==='out').reduce((s,e)=>s+e.amount,0);
-
-  const html = `
-    <div class="doc-head">
-      <div class="rs">${COMPANY.rs}</div>
-      <div class="meta">
-        ${COMPANY.adresse}<br>
-        RC ${COMPANY.rc} — NIF ${COMPANY.nif} — NIS ${COMPANY.nis}
-      </div>
-    </div>
-    <div class="doc-title">${periodTitle.toUpperCase()}</div>
-    <div class="doc-line" style="margin-bottom:16px;">Édité le ${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})} — Solde caisse au ${new Date().toLocaleDateString('fr-FR')} : <b>${fmt(computeBalance())} DZD</b></div>
-    <table class="rep">
-      <thead><tr><th>Date</th><th>Description</th><th>Personne</th><th>Type</th><th class="num">Montant</th><th class="num">Solde</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="6" style="padding:12px 4px; color:#666;">Aucun mouvement sur cette période.</td></tr>'}</tbody>
+  if(currentPeriod !== 'total') entries.forEach(e=>{ if(e.date < currentPeriod + '-01') running += (e.type==='in'?e.amount:-e.amount); });
+  const rows = list.map(e=>{
+    running += (e.type==='in'? e.amount : -e.amount);
+    return `<tr><td>${new Date(e.date+'T00:00:00').toLocaleDateString('fr-FR')}</td><td>${esc(e.desc)}</td><td>${esc(e.person||'—')}</td><td>${e.type==='in'?'Entrée':'Sortie'}</td><td class="num">${e.type==='in'?'+':'−'}${fmt(e.amount)}</td><td class="num">${fmt(running)}</td></tr>`;
+  }).join('');
+  const sIn = list.filter(e=>e.type==='in').reduce((s,e)=>s+e.amount,0);
+  const sOut = list.filter(e=>e.type==='out').reduce((s,e)=>s+e.amount,0);
+  document.getElementById('printArea').innerHTML = `
+    <div class="doc-head"><div class="rs">${COMPANY.rs}</div>
+      <div class="meta">${COMPANY.adresse}<br>RC ${COMPANY.rc} — NIF ${COMPANY.nif} — NIS ${COMPANY.nis}</div></div>
+    <div class="doc-title">${title.toUpperCase()}</div>
+    <div class="doc-line" style="margin-bottom:16px">Édité le ${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})} — Solde caisse : <b>${fmt(computeBalance())} DZD</b></div>
+    <table class="rep"><thead><tr><th>Date</th><th>Description</th><th>Personne</th><th>Type</th><th class="num">Montant</th><th class="num">Solde</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="6" style="padding:12px 4px;color:#666">Aucun mouvement sur cette période.</td></tr>'}</tbody>
       <tfoot>
-        <tr class="rep-foot"><td colspan="4">Total entrées</td><td class="num">${fmt(sumIn)}</td><td></td></tr>
-        <tr class="rep-foot"><td colspan="4">Total sorties</td><td class="num">${fmt(sumOut)}</td><td></td></tr>
-        <tr class="rep-foot"><td colspan="4">Solde net période</td><td class="num">${fmt(sumIn-sumOut)}</td><td></td></tr>
-      </tfoot>
-    </table>
-  `;
-  document.getElementById('printArea').innerHTML = html;
+        <tr class="rep-foot"><td colspan="4">Total entrées</td><td class="num">${fmt(sIn)}</td><td></td></tr>
+        <tr class="rep-foot"><td colspan="4">Total sorties</td><td class="num">${fmt(sOut)}</td><td></td></tr>
+        <tr class="rep-foot"><td colspan="4">Solde net période</td><td class="num">${fmt(sIn-sOut)}</td><td></td></tr>
+      </tfoot></table>`;
   window.print();
 }
 
-/* ---------- Backup / restore ---------- */
+/* ---------- Sauvegarde ---------- */
 function exportData(){
   const blob = new Blob([JSON.stringify({entries, exportedAt:new Date().toISOString()}, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = 'caisse_ipcm_' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
+  a.href = url; a.download = 'caisse_ipcm_' + new Date().toISOString().slice(0,10) + '.json'; a.click();
+  URL.revokeObjectURL(url); toast('Sauvegarde exportée');
 }
 function importData(evt){
-  const file = evt.target.files[0];
-  if(!file) return;
+  const file = evt.target.files[0]; if(!file) return;
   const reader = new FileReader();
-  reader.onload = function(e){
+  reader.onload = function(ev){
     try{
-      const data = JSON.parse(e.target.result);
-      if(!Array.isArray(data.entries)) throw new Error('format invalide');
+      const data = JSON.parse(ev.target.result);
+      if(!Array.isArray(data.entries)) throw new Error('format');
       if(confirm(`Importer ${data.entries.length} mouvement(s) ? Cela remplacera les données actuelles.`)){
-        entries = data.entries;
-        persist();
-        renderTopbar(); renderList(); renderReports();
-        alert('Import réussi.');
+        entries = data.entries; persist(); renderTop(); renderList(); renderReports(); toast('Import réussi');
       }
-    }catch(err){
-      alert("Fichier invalide, impossible d'importer.");
-    }
+    }catch(e){ alert("Fichier invalide, impossible d'importer."); }
   };
-  reader.readAsText(file);
-  evt.target.value = '';
+  reader.readAsText(file); evt.target.value = '';
 }
 
 /* ---------- Init ---------- */
-document.getElementById('dateBadge').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'short', day:'2-digit', month:'short'});
-renderTopbar();
-renderList();
+document.getElementById('bigSub').textContent = TITLES.registre[1]();
+document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
+renderTop(); renderList(); renderReports();
 </script>
 </body>
 </html>
